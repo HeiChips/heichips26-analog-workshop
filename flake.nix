@@ -9,70 +9,78 @@
   };
 
   inputs = {
-    nix-eda.url = "github:fossi-foundation/nix-eda/7.0.0";
-    flake-utils.url = "github:numtide/flake-utils";
-    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
+    nix-eda.url = "github:fossi-foundation/nix-eda/7.2.0";
+    librelane = {
+      url = "github:librelane/librelane/dev";
+      inputs.nix-eda.follows = "nix-eda";
+    };
   };
 
   outputs =
     {
       self,
-      nix-eda,
-      flake-utils,
-      flake-compat,
+      librelane,
+      ...
     }:
     let
+      nix-eda = librelane.inputs.nix-eda;
+      devshell = librelane.inputs.devshell;
       nixpkgs = nix-eda.inputs.nixpkgs;
       lib = nixpkgs.lib;
     in
     {
-      # Common
-      overlays = {
-        default = lib.composeManyExtensions [
-          (nix-eda.composePythonOverlay (
-            pkgs': pkgs: pypkgs': pypkgs:
-            let
-              callPythonPackage = lib.callPackageWith (pkgs' // pkgs'.python3.pkgs);
-            in
-            {
-              fasm = callPythonPackage ./fasm.nix { };
-            }
-          ))
-        ];
-      };
-
-      # Packages
+      # Outputs
       legacyPackages = nix-eda.forAllSystems (
         system:
-        import nix-eda.inputs.nixpkgs {
+        import nixpkgs {
           inherit system;
           overlays = [
             nix-eda.overlays.default
-            self.overlays.default
+            devshell.overlays.default
+            librelane.overlays.default
           ];
         }
       );
 
-      # Development Shells
+      packages = nix-eda.forAllSystems (system: {
+        inherit (self.legacyPackages.${system}.python3.pkgs) ;
+      });
+
       devShells = nix-eda.forAllSystems (
         system:
         let
-          pkgs = self.legacyPackages."${system}";
-          callPackage = lib.callPackageWith pkgs;
+          pkgs = (self.legacyPackages.${system});
         in
         {
-          default = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              # Analog tools
+          default = pkgs.librelane-shell.override ({
+            extra-packages = with pkgs; [
+              # Simulation
+              iverilog
+              verilator
+
+              # Waveform viewing
+              gtkwave
+
+              # FPGA protoyping
+              #yosys # already in LibreLane
+              nextpnr
+              icestorm
+              trellis
+              openfpgaloader
+              
+              # Analog
               xschem
               ngspice # recompiles for some reason
               klayout
               magic
               netgen
+              openvaf-r
             ];
-          };
+
+            extra-python-packages =
+              ps: with ps; (pkgs.lib.optionals (lib.meta.availableOn pkgs.stdenv.hostPlatform cocotb) [ cocotb ]);
+          });
         }
       );
     };
 }
-
