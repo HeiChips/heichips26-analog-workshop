@@ -20,6 +20,18 @@ $(PDK_ROOT)/$(PDK):
 	mkdir -p $(PDK_ROOT)
 	git clone $(PDK_REPO_IHP_OPEN_PDK) --recurse-submodules --depth=1 --revision $(PDK_COMMIT_IHP_OPEN_PDK) $(PDK_ROOT)
 	git clone $(PDK_REPO_IHP_CMOS5L) --recurse-submodules --depth=1 --revision $(PDK_COMMIT_IHP_CMOS5L) $(PDK_ROOT)/$(PDK)
+	# Create missing symlinks
+	ln -s $(PDK_ROOT)/ihp-sg13g2/libs.tech/klayout/python/sg13g2_pycell_lib/ihp/device_base_code.py $(PDK_ROOT)/$(PDK)/libs.tech/klayout/python/sg13cmos5l_pycell_lib/ihp/device_base_code.py
+	ln -s $(PDK_ROOT)/ihp-sg13g2/libs.tech/klayout/python/sg13g2_pycell_lib/ihp/guard_ring_code.py $(PDK_ROOT)/$(PDK)/libs.tech/klayout/python/sg13cmos5l_pycell_lib/ihp/guard_ring_code.py
+	ln -s $(PDK_ROOT)/ihp-sg13g2/libs.tech/xschem/sg13g2_pr/ntap1_ring.sym $(PDK_ROOT)/$(PDK)/libs.tech/xschem/sg13g2_pr/ntap1_ring.sym
+	ln -s $(PDK_ROOT)/ihp-sg13g2/libs.tech/xschem/sg13g2_pr/ptap1_ring.sym $(PDK_ROOT)/$(PDK)/libs.tech/xschem/sg13g2_pr/ptap1_ring.sym
+	# Compile Verilog-A using OpenVAF-reloaded
+	cd $(PDK_ROOT)/ihp-sg13g2/libs.tech/verilog-a/; ./openvaf-compile-va.sh
+	@echo "The PDK has been set up!"
 
 clone-pdk: $(PDK_ROOT)/$(PDK) ## Clone the IHP-Open-PDK repository
 .PHONY: clone-pdk
+
+klayout: $(PDK_ROOT)/$(PDK) ## Open KLayout (edit mode)
+	KLAYOUT_PATH=$(PDK_ROOT)/$(PDK)/libs.tech/klayout/ klayout -e -n sg13cmos5l
+.PHONY: klayout

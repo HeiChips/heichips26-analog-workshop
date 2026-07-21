@@ -10,41 +10,33 @@
 
   inputs = {
     nix-eda.url = "github:fossi-foundation/nix-eda/7.2.0";
-    librelane = {
-      url = "github:librelane/librelane/dev";
-      inputs.nix-eda.follows = "nix-eda";
-    };
+    flake-utils.url = "github:numtide/flake-utils";
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
   };
 
   outputs =
     {
       self,
-      librelane,
-      ...
+      nix-eda,
+      flake-utils,
+      flake-compat,
     }:
     let
-      nix-eda = librelane.inputs.nix-eda;
-      devshell = librelane.inputs.devshell;
       nixpkgs = nix-eda.inputs.nixpkgs;
       lib = nixpkgs.lib;
     in
     {
-      # Outputs
+
+      # Packages
       legacyPackages = nix-eda.forAllSystems (
         system:
         import nixpkgs {
           inherit system;
           overlays = [
             nix-eda.overlays.default
-            devshell.overlays.default
-            librelane.overlays.default
           ];
         }
       );
-
-      packages = nix-eda.forAllSystems (system: {
-        inherit (self.legacyPackages.${system}.python3.pkgs) ;
-      });
 
       devShells = nix-eda.forAllSystems (
         system:
@@ -52,34 +44,18 @@
           pkgs = (self.legacyPackages.${system});
         in
         {
-          default = pkgs.librelane-shell.override ({
-            extra-packages = with pkgs; [
-              # Simulation
-              iverilog
-              verilator
-
-              # Waveform viewing
-              gtkwave
-
-              # FPGA protoyping
-              #yosys # already in LibreLane
-              nextpnr
-              icestorm
-              trellis
-              openfpgaloader
-              
-              # Analog
+          default = pkgs.mkShell {
+            LOCALE_ARCHIVE = lib.optionalString pkgs.stdenv.isLinux "${pkgs.glibcLocales}/lib/locale/locale-archive";
+            buildInputs = with pkgs; [
+              # Analog tools
               xschem
-              ngspice # recompiles for some reason
+              ngspice
               klayout
               magic
               netgen
               openvaf-r
             ];
-
-            extra-python-packages =
-              ps: with ps; (pkgs.lib.optionals (lib.meta.availableOn pkgs.stdenv.hostPlatform cocotb) [ cocotb ]);
-          });
+          };
         }
       );
     };
