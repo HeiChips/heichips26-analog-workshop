@@ -31,6 +31,9 @@ The first time you enable the Nix shell, please run `make clone-pdk` to install 
   - `cd macros/heichips26_analog_project/schematic/xschem`
 4. Open xschem: `xschem <name of schematic>`, e.g. `xschem inverter.sch`
 
+> [!TIP]
+> If you would like to open the PDK "start page" schematic, run: `xschem --rcfile $PDK_ROOT/$PDK/libs.tech/xschem/xschemrc`
+
 ### Run a Simulation
 
 1. First, enable a Nix shell using `nix-shell`.
