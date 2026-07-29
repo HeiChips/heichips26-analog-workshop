@@ -4,10 +4,21 @@ PDK_ROOT ?= $(MAKEFILE_DIR)/IHP-Open-PDK
 PDK ?= ihp-sg13cmos5l
 
 PDK_REPO_IHP_OPEN_PDK ?= https://github.com/iic-jku/IHP-Open-PDK.git
-PDK_COMMIT_IHP_OPEN_PDK ?= a70a2b692075535d7133994c514fd0e09f17a920
+PDK_COMMIT_IHP_OPEN_PDK ?= 482a25877e64e5b1047dbad590b4b354b89273df
 
 PDK_REPO_IHP_CMOS5L ?= https://github.com/iic-jku/ihp-sg13cmos5l.git
-PDK_COMMIT_IHP_CMOS5L ?= c18379d6d1b54d70bc40231a456b4c6662631d72
+PDK_COMMIT_IHP_CMOS5L ?= fe279fbf25626f81610f4ad2d968f1b8a3425e90
+
+KLAYOUT_PLUGINS = KLayoutPluginUtils \
+                  AlignToolPlugin \
+                  MoveQuicklyToolPlugin \
+                  LayerShortcutsPlugin \
+                  AutoBackupPlugin \
+                  PinToolPlugin \
+                  LibraryManagerPlugin \
+                  VectorFileExportPlugin \
+                  NetlistImportPlugin \
+                  xsection
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -18,19 +29,37 @@ help: ## Show this help message
 
 $(PDK_ROOT)/$(PDK):
 	mkdir -p $(PDK_ROOT)
+	# Clone repositories
+	@echo "Cloning repositories…"
 	git clone $(PDK_REPO_IHP_OPEN_PDK) --recurse-submodules --depth=1 --revision $(PDK_COMMIT_IHP_OPEN_PDK) $(PDK_ROOT)
 	git clone $(PDK_REPO_IHP_CMOS5L) --recurse-submodules --depth=1 --revision $(PDK_COMMIT_IHP_CMOS5L) $(PDK_ROOT)/$(PDK)
 	# Create missing symlinks
+	@echo "Creating missing symlinks…"
 	ln -s $(PDK_ROOT)/ihp-sg13g2/libs.tech/klayout/python/sg13g2_pycell_lib/ihp/device_base_code.py $(PDK_ROOT)/$(PDK)/libs.tech/klayout/python/sg13cmos5l_pycell_lib/ihp/device_base_code.py
 	ln -s $(PDK_ROOT)/ihp-sg13g2/libs.tech/klayout/python/sg13g2_pycell_lib/ihp/guard_ring_code.py $(PDK_ROOT)/$(PDK)/libs.tech/klayout/python/sg13cmos5l_pycell_lib/ihp/guard_ring_code.py
 	ln -s $(PDK_ROOT)/ihp-sg13g2/libs.tech/xschem/sg13g2_pr/ntap1_ring.sym $(PDK_ROOT)/$(PDK)/libs.tech/xschem/sg13g2_pr/ntap1_ring.sym
 	ln -s $(PDK_ROOT)/ihp-sg13g2/libs.tech/xschem/sg13g2_pr/ptap1_ring.sym $(PDK_ROOT)/$(PDK)/libs.tech/xschem/sg13g2_pr/ptap1_ring.sym
 	# Compile Verilog-A using OpenVAF-reloaded
+	@echo "Compiling Verilog-A models using OpenVAF-reloaded…"
 	cd $(PDK_ROOT)/ihp-sg13g2/libs.tech/verilog-a/; ./openvaf-compile-va.sh
-	@echo "The PDK has been set up!"
+	# Install KLayout Plugins
+	@echo "Installing KLayout Plugins…"
+	@for plugin in ${KLAYOUT_PLUGINS} ; do \
+		echo "- $$plugin…" ; \
+		KLAYOUT_PATH=$(PDK_ROOT)/$(PDK)/libs.tech/klayout/ klayout -t -ne -rr -b -y $$plugin ; \
+	done
+	@echo "Congratulations, the PDK has been set up!"
 
 clone-pdk: $(PDK_ROOT)/$(PDK) ## Clone the IHP-Open-PDK repository
 .PHONY: clone-pdk
+
+precheck: $(PDK_ROOT)/$(PDK) ## Run the precheck on the design specified in submission.yaml
+	PDK_ROOT=$(PDK_ROOT) PDK=$(PDK) python3 .github/precheck/heichips_precheck.py --config submission.yaml
+.PHONY: precheck
+
+precheck-demo: $(PDK_ROOT)/$(PDK) ## Run the demo precheck (don't use for submission)
+	PDK_ROOT=$(PDK_ROOT) PDK=$(PDK) python3 .github/precheck/heichips_precheck.py --config submission.yaml --demo
+.PHONY: precheck-demo
 
 klayout: $(PDK_ROOT)/$(PDK) ## Open KLayout (edit mode)
 	KLAYOUT_PATH=$(PDK_ROOT)/$(PDK)/libs.tech/klayout/ klayout -e -n sg13cmos5l
