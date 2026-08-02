@@ -9,7 +9,7 @@
   };
 
   inputs = {
-    nix-eda.url = "github:fossi-foundation/nix-eda/7.4.0";
+    nix-eda.url = "github:fossi-foundation/nix-eda/leo/xschem";
     librelane = {
       url = "github:librelane/librelane/dev";
       inputs.nix-eda.follows = "nix-eda";
@@ -61,16 +61,16 @@
               # Waveform viewing
               gtkwave
 
-              # FPGA protoyping
+              # FPGA prototyping
               #yosys # already in LibreLane
               nextpnr
               icestorm
               trellis
               openfpgaloader
-              
+
               # Analog
               xschem
-			  xterm
+              xterm
               ngspice # recompiles for some reason
               klayout
               magic
@@ -79,7 +79,23 @@
             ];
 
             extra-python-packages =
-              ps: with ps; (pkgs.lib.optionals (lib.meta.availableOn pkgs.stdenv.hostPlatform cocotb) [ cocotb ]);
+              ps:
+              with ps;
+              [
+                # Plotting of simulation results (scripts/plot_simulations)
+                numpy
+                matplotlib
+              ]
+              ++ (pkgs.lib.optionals (lib.meta.availableOn pkgs.stdenv.hostPlatform cocotb) [ cocotb ]);
+
+            # Point ngspice at config/.spiceinit (PDK model sourcepath + OSDI loads) for
+            # every run in this shell, including interactive ones started from xschem.
+            extra-env = [
+              {
+                name = "SPICE_USERINIT_DIR";
+                eval = "$PRJ_ROOT/config";
+              }
+            ];
           });
         }
       );
