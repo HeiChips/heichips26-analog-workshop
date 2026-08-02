@@ -2,6 +2,9 @@
 
 HeiChips 2026 Analog Workshop
 
+> [!IMPORTANT]
+> The workshop tutorial is available at: <https://heichips.github.io/heichips26-analog-workshop/>
+
 Table Of Contents
 
 - [Prerequisites](#prerequisites)
