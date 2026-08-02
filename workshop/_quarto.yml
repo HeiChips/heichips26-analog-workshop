@@ -1,0 +1,65 @@
+# SPDX-FileCopyrightText: 2026 The HeiChips Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+project:
+  type: website
+  output-dir: _site
+
+var:
+  url-repo: https://github.com/HeiChips/heichips26-analog-workshop
+
+website:
+  title: "HeiChips 2026 Analog Workshop"
+  site-url: "https://heichips.github.io/heichips26-analog-workshop/"
+  repo-url: "https://github.com/HeiChips/heichips26-analog-workshop"
+  repo-subdir: workshop
+  repo-branch: main
+  repo-actions: [edit, issue]
+  navbar:
+    background: "#447099"
+    search: true
+    left:
+      - icon: house
+        href: index.qmd
+        text: "Home"
+      - icon: bi-filetype-pdf
+        text: PDF
+        href: index.pdf
+    right:
+      - icon: github
+        href: "https://github.com/HeiChips/heichips26-analog-workshop"
+        target: "_blank"
+  page-footer:
+    left: |
+      [Source code]({{< meta var.url-repo >}}){.external target="_blank"}
+    right: |
+      Website built with [Quarto](https://quarto.org/){.external target="_blank"}
+
+execute:
+  freeze: auto
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme:
+      light: cosmo
+      dark: solar
+    fig-align: center
+    lang: en-US
+    lightbox: true
+    include-after-body:
+      text: |
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          document.querySelectorAll('a').forEach(function(a) {
+            var t = (a.textContent || '').trim();
+            if (t === 'Edit this page') {
+              a.href = 'https://github.com/HeiChips/heichips26-analog-workshop/pulls';
+            } else if (t === 'Report an issue') {
+              a.href = 'https://github.com/HeiChips/heichips26-analog-workshop/issues';
+            }
+          });
+        });
+        </script>

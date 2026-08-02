@@ -1,0 +1,28 @@
+---
+title: "HeiChips 2026 Analog Workshop"
+author:
+  - name: Simon Dorrer
+    orcid: 0009-0001-5994-5477
+    email: simon.dorrer@jku.at
+date: last-modified
+license: "Apache-2.0"
+copyright:
+  holder: "The HeiChips Contributors"
+  year: 2026
+format:
+  html:
+    number-sections: true
+    toc: true
+    toc-expand: 3
+  pdf:
+    number-sections: true
+    toc: true
+---
+
+::: {.callout-note}
+We happily accept [pull requests](https://github.com/HeiChips/heichips26-analog-workshop/pulls) to fix typos or add content! If you want to discuss something that is not clear, please [open an issue](https://github.com/HeiChips/heichips26-analog-workshop/issues)!
+:::
+
+# Workshop Overview {#sec-overview}
+
+**ToDo:** Add workshop content here.
