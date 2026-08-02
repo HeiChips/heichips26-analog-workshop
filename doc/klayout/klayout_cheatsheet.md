@@ -1,4 +1,4 @@
-# KLayout IHP Cheat Sheet
+# KLayout IHP SG13CMOS5L Cheat Sheet
 
 ## Plugins
 
@@ -17,7 +17,7 @@
 - Route sensitive signals first.
 - Avoid the shadowing effect (orient the bias transistor in the same direction as the mirror transistor).
 - Use self-made decoupling capacitors with NMOS capacitors at the bottom (for low-Q decoupling) and metal capacitors between each layer with alternating (vertical and horizontal) VIA contacts.
-  - This fixes ringing that would otherwise occur when bond-wire inductance and high-Q MIM capacitors resonate.
+  - This fixes ringing that would otherwise occur when bond-wire inductance and high-Q metal capacitors resonate.
   - Example stack: NMOS (VDD) → M1 (VSS) → M2 (VDD), again alternating vertical and horizontal.
   - Alternative: Use PMOS instead of NMOS, as this often is recommended for better ESD robustness.
 - **RF decoupling:** Add an additional RC circuit in series with the supply voltage.
@@ -26,7 +26,7 @@
 
 ## Project Start
 
-1. Open KLayout in edit mode with `klayout -e` (or `ke`).
+1. Open KLayout in edit mode with `klayout -e` (or `ke`). In this repository, use `make klayout` from the root directory to open KLayout with the `sg13cmos5l` technology preloaded.
 2. **File → New Layout**:
     - Choose top cell name
     - Set **Data Base Unit (DBU)** to **0.001 µm** → IMPORTANT for IHP Open-PDK*
@@ -71,15 +71,18 @@
 - Works for both `.gds` and `.klay.gds`.
 - Build the cell tree bottom-up.
 
-Common SG13_dev PCells:
+Common SG13_dev PCells (the library names `SG13_dev` and `SG13_native_pcell_lib` are the same as in SG13G2):
 
-- Transistors: `pmos`, `nmos` (low-voltage)
+- Transistors: `nmos`, `pmos` (low-voltage, 1.5 V) and `nmosHV`, `pmosHV` (high-voltage, 3.3 V)
 - Resistors: `rppd`, `rsil`, `rhigh`
-- Capacitors: `cmim`
-- Well/substrate contacts: `guard_ring`
+- Capacitors: `cap_mfringe` (metal fringe/MOM), `moscap_n`, `moscap_p`
+  - SG13CMOS5L has **no MIM capacitor** (`cmim`) — use fringe or MOS capacitors instead.
+- Antenna diodes: `dantenna`, `dpantenna`
+- Well/substrate contacts: `guard_ring`, `ntap1`, `ptap1`
+- Pads & sealring: `bondpad`, `sealring`
 - Vias:
   - `via_stack` from `SG13_dev`
-  - `Via` from `SG13_native_pcell_lib library`
+  - `Via` from the `SG13_native_pcell_lib` library
 - etc.
 
 ---
@@ -190,7 +193,7 @@ Common SG13_dev PCells:
     - **Right top corner → click on "create netlist" → creates a `.cdl` or `.spice` file**
   - KLayout:
     - Rename the cell to match the LVS netlist name
-    - **SG13G2 → SG13G2 LVS Options (`F12`) → set "Netlist Path"**
+    - **SG13CMOS5L PDK → SG13CMOS5L LVS Options (`F12`) → set "Netlist Path"**
     - **Run KLayout LVS (`F11`)**
 
 ---
@@ -199,8 +202,8 @@ Common SG13_dev PCells:
 
 - Open-Source Tool Check
   - KLayout:
-    - **SG13G2 → SG13G2 DRC Options (`F10`)**
-      - Set the extra rule set (do **not** disable it).
+    - **SG13CMOS5L PDK → SG13CMOS5L DRC Options (`F10`)**
+      - Keep the FEOL, BEOL, and extra rule sets enabled (do **not** disable them).
       - **Advanced settings:**
         - Disable density checks (only at the beginning).
         - Enable antenna checks.
