@@ -108,7 +108,7 @@ The root [`Makefile`](https://github.com/HeiChips/heichips26-analog-workshop/blo
 | Target | Description |
 | :----- | :---------- |
 | `make clone-pdk` | Clone the IHP Open-PDK plus the `ihp-sg13cmos5l` PDK into `IHP-Open-PDK/` and compile the Verilog-A models with OpenVAF |
-| `make klayout-setup` | Install the KLayout productivity plugins into your user directory (see @sec-klayout-plugins) |
+| `make klayout-setup` | Install the KLayout plugins into your user directory `~/.klayout/salt/`, once per machine (see @sec-klayout-plugins) |
 | `make klayout` | Open KLayout in edit mode with the `sg13cmos5l` technology preloaded |
 
 : Root Makefile targets used in this workshop. {#tbl-root-make}
@@ -125,8 +125,7 @@ The [`inverter/`](https://github.com/HeiChips/heichips26-analog-workshop/tree/ma
 | `netlist/` | Exported netlists: `schematic/` (for LVS), `layout/` (extracted), `pex/` (parasitic) |
 | `verification/` | DRC and LVS reports (`drc/`, `lvs/`) |
 | `scripts/` | Sizing notebooks (`sizing/`), vendored `sak-*` verification scripts, rendering |
-| `final/` | Build deliverables for top-level integration (GDS, LEF, LIB, Verilog stub) |
-| `render/` | Layout render images for documentation |
+| `final/` | Build deliverables for top-level integration (GDS, LEF, LIB, Verilog stub, and the layout render in `render/`) |
 
 : Folder structure of the `inverter` macro. {#tbl-macro-folders}
 
@@ -486,7 +485,7 @@ The most important shortcuts are listed in @tbl-klayout-keys, taken from the [KL
 
 ## The KLayout Productivity Suite {#sec-klayout-plugins}
 
-The [KLayout Productivity Suite](https://github.com/iic-jku/klayout-productivity-suite) is a collection of plugins developed at JKU that make manual layout much faster. They were already installed with `make klayout-setup` in @sec-overview. The full documentation with animations is [here](https://iic-jku.github.io/klayout-productivity-suite/doc/doc.html). A short summary:
+The [KLayout Productivity Suite](https://github.com/iic-jku/klayout-productivity-suite) is a collection of plugins developed at JKU that make manual layout much faster. They were installed with `make klayout-setup` in @sec-overview, or are already present from an earlier installation, since they live in your user directory `~/.klayout/salt/`. The full documentation with animations is [here](https://iic-jku.github.io/klayout-productivity-suite/doc/doc.html). A short summary:
 
 | Plugin | What it does |
 | :----- | :----------- |
