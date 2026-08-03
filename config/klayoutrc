@@ -127,7 +127,7 @@
  <image-cache-size>1</image-cache-size>
  <images-visible>true</images-visible>
  <initial-hier-depth>1</initial-hier-depth>
- <initial-technology>sg13g2</initial-technology>
+ <initial-technology>sg13cmos5l</initial-technology>
  <inst-color>#ff8000</inst-color>
  <inst-label-font>0</inst-label-font>
  <inst-label-transform>true</inst-label-transform>
@@ -191,10 +191,10 @@ zoom_menu.max_hier_0:none;
 zoom_menu.max_hier_1:'Ctrl+F';
 zoom_menu.dec_max_hier:'-';
 zoom_menu.inc_max_hier:'+';
-sg13g2_menu.macro_in_menu_sg13g2_drc:F9;
-sg13g2_menu.macro_in_menu_sg13g2_drc_options:F10;
-sg13g2_menu.macro_in_menu_sg13g2_lvs:F11;
-sg13g2_menu.macro_in_menu_sg13g2_lvs_options:F12;
+sg13cmos5l_menu.macro_in_menu_sg13cmos5l_drc:F9;
+sg13cmos5l_menu.macro_in_menu_sg13cmos5l_drc_options:F10;
+sg13cmos5l_menu.macro_in_menu_sg13cmos5l_lvs:F11;
+sg13cmos5l_menu.macro_in_menu_sg13cmos5l_lvs_options:F12;
  </key-bindings>
  <klayout_auto_backups_enabled>true</klayout_auto_backups_enabled>
  <l2ndb-export-circuit-cell-prefix>CIRCUIT_</l2ndb-export-circuit-cell-prefix>
