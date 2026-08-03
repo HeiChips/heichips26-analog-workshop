@@ -177,6 +177,51 @@ An inverter can act as a digital circuit, when the input is driven by a digital 
 
 The inverter is sized with the $g_\mathrm{m}/I_\mathrm{D}$ method (see [Transistor Sizing Using $g_\mathrm{m}/I_\mathrm{D}$ Methodology](https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-gmid-method) for the theoretical background). Instead of relying on textbook square-law equations, the method looks up the actual device behavior from pre-characterized SPICE simulations. The full sizing flow is implemented in the Jupyter notebook [`scripts/sizing/sizing_inverter.ipynb`](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/scripts/sizing/sizing_inverter.ipynb), which uses [`pygmid`](https://github.com/dreoilin/pygmid) to query the pre-characterized `ihp-sg13cmos5l` lookup tables in [`scripts/sizing/data/`](https://github.com/HeiChips/heichips26-analog-workshop/tree/main/inverter/scripts/sizing/data). An overview of the techsweeps is available in [`doc/sizing/`](https://github.com/HeiChips/heichips26-analog-workshop/tree/main/doc/sizing).
 
+### Design Tradeoffs: Choosing $g_\mathrm{m}/I_\mathrm{D}$ and $L$ {#sec-tradeoffs}
+
+Before sizing anything, two numbers have to be picked: the transconductance efficiency $g_\mathrm{m}/I_\mathrm{D}$ and the channel length $L$. Everything else follows from them, so it is worth understanding what each one buys and what it costs.
+
+$g_\mathrm{m}/I_\mathrm{D}$ says how much transconductance you get per ampere of bias current, in $\mathrm{S/A}$. It is a normalized, technology-independent measure of the **inversion level** of the device:
+
+| Inversion level | $g_\mathrm{m}/I_\mathrm{D}$ ($\mathrm{S/A}$) | Character |
+| :-------------- | :---: | :--------- |
+| **Strong** | below $\approx 7.5$ | Large overdrive, high current density $I_\mathrm{D}/W$, so a given current needs little width. Fast, small, and area-efficient, but each ampere buys little $g_\mathrm{m}$. |
+| **Moderate** | $\approx 7.5$ to $\approx 17.5$ | The compromise region. The speed-efficiency product $f_\mathrm{T} \cdot g_\mathrm{m}/I_\mathrm{D}$ peaks here, which is why most amplifier stages end up in it. |
+| **Weak** | above $\approx 17.5$ | Maximum $g_\mathrm{m}$ per ampere, so lowest power and highest intrinsic gain, with small $V_\mathrm{ds,sat}$ and therefore good voltage headroom. The price is width, capacitance, and speed. |
+
+: Inversion levels and what they mean. {#tbl-inversion}
+
+The channel length works largely independently of this. Long $L$ raises the output resistance $r_\mathrm{ds}$ and thus the intrinsic gain, improves matching, and lowers flicker noise (which scales with $1/L^2$ at constant $g_\mathrm{m}/I_\mathrm{D}$). Short $L$ raises $f_\mathrm{T}$ and shrinks area and gate capacitance. Speed and gain therefore pull in opposite directions.
+
+@fig-tradeoffs maps both knobs onto one picture. The arrows point from the center towards the corner where each design parameter reaches its **best** value, so the same parameter is at its worst in the opposite direction.
+
+![Overview of key design tradeoffs depending on the channel length $L$ and the transconductance efficiency $g_\mathrm{m}/I_\mathrm{D}$. Taken from [Tradeoffs in Saturation](https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-tradeoffs-saturation) in the Analog Circuit Design course @ JKU.](fig/tradeoffs_gmid.svg){#fig-tradeoffs width=75%}
+
+Read it corner by corner:
+
+- **Strong inversion, short $L$** (bottom left): $f_\mathrm{T}$ and input impedance $Z_\mathrm{in}$ are maximal, gate capacitance $C_\mathrm{gg}$ and area are minimal. This is the high-speed corner.
+- **Strong inversion, medium $L$** (left): minimal thermal noise PSD $S_\mathrm{TH}$ and maximal current density $I_\mathrm{D}/W$.
+- **Moderate inversion, short $L$** (bottom): the speed-efficiency product $f_\mathrm{T} \cdot g_\mathrm{m}/I_\mathrm{D}$ is maximal, the best overall compromise between bandwidth and current.
+- **Moderate inversion, long $L$** (top): the output resistance $r_\mathrm{ds} = 1/g_\mathrm{ds}$ is maximal. This is where current sources belong.
+- **Weak inversion, long $L$** (top right): intrinsic gain $g_\mathrm{m}/g_\mathrm{ds}$ is maximal, while flicker corner frequency $f_\mathrm{co}$, noise factor $\gamma$, flicker noise $S_\mathrm{FL}$, offset $V_\mathrm{OS}$, and power $P$ are minimal. This is the low-power, low-noise, high-gain corner.
+- **Weak inversion, medium $L$** (right): overdrive $V_\mathrm{od}$ and $V_\mathrm{ds,sat}$ are minimal, so this corner gives the most voltage headroom.
+
+Two corners stay empty on purpose. Strong inversion with a long channel and weak inversion with a short channel optimize nothing, they combine the drawbacks of both settings, so in practice they make little sense.
+
+::: {.callout-tip}
+## Rules of thumb
+
+Fast circuits use **strong inversion with short channels**. Low-power and low-noise circuits use **weak inversion with long channels**. Current sources use **moderate inversion with longer channels**, to maximize their output resistance. Everything else starts in moderate inversion and is moved from there.
+:::
+
+::: {.callout-note}
+## Where does our inverter sit?
+
+The sizing below lands at $g_\mathrm{m}/I_\mathrm{D} = 3.76\,\mathrm{S/A}$ with $L = 1\,\mathrm{\mu m}$, which is deep strong inversion with a comparatively long channel, that is the corner the map leaves empty. This is a deliberate compromise for this example, not an oversight: the stage has to drive a $10\,\mathrm{pF}$ load, which demands a lot of $g_\mathrm{m}$ and therefore a lot of current, while the long channel keeps the intrinsic gain and the matching of this very simple circuit acceptable. It also explains the modest measured gain of about $31\,\mathrm{dB}$. Keep the map in mind when you size your own blocks, where you are free to choose the operating point rather than inheriting it.
+:::
+
+### Sizing the Inverter
+
 The notebook runs through the following steps:
 
 1. Define the design targets: $V_\mathrm{DD} = 1.5\,\mathrm{V}$, $V_\mathrm{cm,in} = V_\mathrm{cm,out} = V_\mathrm{DD}/2 = 0.75\,\mathrm{V}$, $I_\mathrm{out} = 0.75\,\mathrm{mA}$, $C_\mathrm{load} = 10\,\mathrm{pF}$, and $L = 1\,\mathrm{\mu m}$. $L$ is chosen longer than the minimum to increase intrinsic gain and reduce mismatch, at the cost of area and bandwidth.
@@ -666,7 +711,8 @@ Recommended steps:
 4. Update the symbol `ringosc.sym` and the PEX symbol `ringosc_pex.sym`: remove the `vin` pin, the ring oscillator has no input. Alternatively, regenerate the symbol from the schematic (press `A`), following @sec-draw-symbol and @sec-pex-symbol.
 5. Adapt the renamed transient testbench `ringosc_tb_tran.sch`: remove the input source, and measure the oscillation frequency. Since the delay per stage is small, simulate a few hundred nanoseconds with a fine step. Measure the frequency, for example with two `meas tran ... when v(vout)=0.75 rise=...` commands that time consecutive rising crossings of $V_\mathrm{cm}$, and compute $f_\mathrm{osc} = 1/T$. The expected relation is $f_\mathrm{osc} = 1/(2 \cdot N \cdot t_\mathrm{d})$ with $N = 3$ stages and $t_\mathrm{d}$ the effective stage delay. Delete the testbenches that are no longer relevant.
 6. Think about the startup. An ideal simulation can rest on the metastable point where all stages sit at $V_\mathrm{cm}$. If the ring does not start, kick it with an initial condition, for example `.ic v(osc)=0`.
-7. Draw the top-level layout in `layout/ringosc.gds`, following @sec-draw-layout: create a new top cell `ringosc`, place four instances of the existing `inverter` cell, and route the ring. Re-run DRC and LVS, extract the parasitics with `make magic-pex`, and compare the post-layout oscillation frequency against the schematic level. The parasitics add delay per stage, so the frequency drops.
+7. Resize the inverter and watch the frequency. Open `inverter.sch` and vary $W$, $L$, and the finger count `ng` of $M_1$ and $M_2$, then re-run the transient simulation for each variant. Predict the outcome before you simulate, and use @sec-tradeoffs as your guide.
+8. Draw the top-level layout in `layout/ringosc.gds`, following @sec-draw-layout: create a new top cell `ringosc`, place four instances of the existing `inverter` cell, and route the ring. Re-run DRC and LVS, extract the parasitics with `make magic-pex`, and compare the post-layout oscillation frequency against the schematic level. The parasitics add delay per stage, so the frequency drops.
 
 # Acknowledgements
 
