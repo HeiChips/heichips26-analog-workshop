@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220" font-family="Helvetica, Arial, sans-serif" font-size="16">
+  <style>
+    .wire { stroke: #1a1a1a; stroke-width: 2; fill: none; }
+    .sym  { stroke: #1a1a1a; stroke-width: 2; fill: #ffffff; }
+    .lbl  { fill: #1a1a1a; }
+    .net  { fill: #b02020; font-style: italic; }
+  </style>
+
+  <!-- Stage 1 -->
+  <line class="wire" x1="60" y1="140" x2="110" y2="140"/>
+  <polygon class="sym" points="110,110 110,170 160,140"/>
+  <circle class="sym" cx="166" cy="140" r="6"/>
+  <text class="lbl" x="118" y="146" font-size="13">1</text>
+  <line class="wire" x1="172" y1="140" x2="230" y2="140"/>
+
+  <!-- Stage 2 -->
+  <polygon class="sym" points="230,110 230,170 280,140"/>
+  <circle class="sym" cx="286" cy="140" r="6"/>
+  <text class="lbl" x="238" y="146" font-size="13">2</text>
+  <line class="wire" x1="292" y1="140" x2="350" y2="140"/>
+
+  <!-- Stage 3 -->
+  <polygon class="sym" points="350,110 350,170 400,140"/>
+  <circle class="sym" cx="406" cy="140" r="6"/>
+  <text class="lbl" x="358" y="146" font-size="13">3</text>
+  <line class="wire" x1="412" y1="140" x2="490" y2="140"/>
+
+  <!-- ring node dot after stage 3 -->
+  <circle cx="450" cy="140" r="3.5" fill="#1a1a1a"/>
+  <text class="net" x="428" y="128">osc</text>
+
+  <!-- feedback wire from stage-3 output back to stage-1 input -->
+  <line class="wire" x1="450" y1="140" x2="450" y2="60"/>
+  <line class="wire" x1="450" y1="60" x2="60" y2="60"/>
+  <line class="wire" x1="60" y1="60" x2="60" y2="140"/>
+
+  <!-- Buffer stage (4th inverter) -->
+  <polygon class="sym" points="490,110 490,170 540,140"/>
+  <circle class="sym" cx="546" cy="140" r="6"/>
+  <text class="lbl" x="498" y="146" font-size="13">4</text>
+  <line class="wire" x1="552" y1="140" x2="640" y2="140"/>
+  <text class="net" x="650" y="146">vout</text>
+  <text class="lbl" x="480" y="196" font-size="14">output buffer</text>
+
+</svg>

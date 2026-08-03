@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 260" font-family="Helvetica, Arial, sans-serif" font-size="16">
+  <style>
+    .wire { stroke: #1a1a1a; stroke-width: 2; fill: none; }
+    .sym  { stroke: #1a1a1a; stroke-width: 2; fill: #ffffff; }
+    .lbl  { fill: #1a1a1a; }
+    .net  { fill: #b02020; font-style: italic; }
+  </style>
+
+  <!-- input coupling: vin node -->
+  <text class="net" x="30" y="176">vin</text>
+  <circle cx="80" cy="170" r="3.5" fill="#1a1a1a"/>
+  <line class="wire" x1="60" y1="170" x2="180" y2="170"/>
+
+  <!-- inverter triangle -->
+  <polygon class="sym" points="180,130 180,210 260,170"/>
+  <!-- bubble at output -->
+  <circle class="sym" cx="268" cy="170" r="8"/>
+  <line class="wire" x1="276" y1="170" x2="400" y2="170"/>
+
+  <!-- VDD / VSS rails of inverter -->
+  <line class="wire" x1="207" y1="143" x2="207" y2="110"/>
+  <line class="wire" x1="192" y1="110" x2="222" y2="110"/>
+  <text class="lbl" x="230" y="115">VDD</text>
+  <line class="wire" x1="207" y1="197" x2="207" y2="230"/>
+  <line class="wire" x1="192" y1="230" x2="222" y2="230"/>
+  <text class="lbl" x="230" y="235">VSS</text>
+
+  <!-- output node -->
+  <circle cx="340" cy="170" r="3.5" fill="#1a1a1a"/>
+  <text class="net" x="410" y="176">vout</text>
+
+  <!-- feedback path: up from vin node, resistor, down to vout node -->
+  <line class="wire" x1="80" y1="170" x2="80" y2="60"/>
+  <line class="wire" x1="80" y1="60" x2="170" y2="60"/>
+  <!-- resistor zig-zag horizontal, centered around x=210 -->
+  <polyline class="wire" points="170,60 178,45 194,75 210,45 226,75 242,45 250,60"/>
+  <line class="wire" x1="250" y1="60" x2="340" y2="60"/>
+  <line class="wire" x1="340" y1="60" x2="340" y2="170"/>
+  <text class="lbl" x="192" y="30">R</text>
+  <text class="lbl" x="205" y="36" font-size="12">f</text>
+
+</svg>
