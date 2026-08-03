@@ -1,4 +1,5 @@
 /.quarto/
 /_site/
 index.pdf
+fig/*.pdf
 **/*.quarto_ipynb
