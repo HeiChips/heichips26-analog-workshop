@@ -375,7 +375,11 @@ window.Quarto = {
   </ul></li>
   <li><a href="#sec-analog" id="toc-sec-analog" class="nav-link" data-scroll-target="#sec-analog"><span class="header-section-number">3</span> The Analog Macro: A CMOS Inverter</a>
   <ul class="collapse">
-  <li><a href="#sec-sizing" id="toc-sec-sizing" class="nav-link" data-scroll-target="#sec-sizing"><span class="header-section-number">3.1</span> Transistor Sizing</a></li>
+  <li><a href="#sec-sizing" id="toc-sec-sizing" class="nav-link" data-scroll-target="#sec-sizing"><span class="header-section-number">3.1</span> Transistor Sizing</a>
+  <ul class="collapse">
+  <li><a href="#sec-tradeoffs" id="toc-sec-tradeoffs" class="nav-link" data-scroll-target="#sec-tradeoffs"><span class="header-section-number">3.1.1</span> Design Tradeoffs: Choosing <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> and <span class="math inline">\(L\)</span></a></li>
+  <li><a href="#sizing-the-inverter" id="toc-sizing-the-inverter" class="nav-link" data-scroll-target="#sizing-the-inverter"><span class="header-section-number">3.1.2</span> Sizing the Inverter</a></li>
+  </ul></li>
   <li><a href="#sec-batch-sim" id="toc-sec-batch-sim" class="nav-link" data-scroll-target="#sec-batch-sim"><span class="header-section-number">3.2</span> Batch Simulation with the Makefile</a></li>
   </ul></li>
   <li><a href="#sec-schematic" id="toc-sec-schematic" class="nav-link" data-scroll-target="#sec-schematic"><span class="header-section-number">4</span> Hands-On: Schematic Entry</a>
@@ -600,7 +604,7 @@ Table&nbsp;2: Root Makefile targets used in this workshop.
 </tr>
 <tr class="even">
 <td style="text-align: left;"><code>make klayout-setup</code></td>
-<td style="text-align: left;">Install the KLayout productivity plugins into your user directory (see <a href="#sec-klayout-plugins" class="quarto-xref">Section&nbsp;5.2</a>)</td>
+<td style="text-align: left;">Install the KLayout plugins into your user directory <code>~/.klayout/salt/</code>, once per machine (see <a href="#sec-klayout-plugins" class="quarto-xref">Section&nbsp;5.2</a>)</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><code>make klayout</code></td>
@@ -659,11 +663,7 @@ Table&nbsp;3: Folder structure of the <code>inverter</code> macro.
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><code>final/</code></td>
-<td style="text-align: left;">Build deliverables for top-level integration (GDS, LEF, LIB, Verilog stub)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><code>render/</code></td>
-<td style="text-align: left;">Layout render images for documentation</td>
+<td style="text-align: left;">Build deliverables for top-level integration (GDS, LEF, LIB, Verilog stub, and the layout render in <code>render/</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -808,6 +808,101 @@ Figure&nbsp;1: The CMOS inverter circuit with dummy transistors.
 <section id="sec-sizing" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="sec-sizing"><span class="header-section-number">3.1</span> Transistor Sizing</h2>
 <p>The inverter is sized with the <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> method (see <a href="https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-gmid-method">Transistor Sizing Using <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> Methodology</a> for the theoretical background). Instead of relying on textbook square-law equations, the method looks up the actual device behavior from pre-characterized SPICE simulations. The full sizing flow is implemented in the Jupyter notebook <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/scripts/sizing/sizing_inverter.ipynb"><code>scripts/sizing/sizing_inverter.ipynb</code></a>, which uses <a href="https://github.com/dreoilin/pygmid"><code>pygmid</code></a> to query the pre-characterized <code>ihp-sg13cmos5l</code> lookup tables in <a href="https://github.com/HeiChips/heichips26-analog-workshop/tree/main/inverter/scripts/sizing/data"><code>scripts/sizing/data/</code></a>. An overview of the techsweeps is available in <a href="https://github.com/HeiChips/heichips26-analog-workshop/tree/main/doc/sizing"><code>doc/sizing/</code></a>.</p>
+<section id="sec-tradeoffs" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1" class="anchored" data-anchor-id="sec-tradeoffs"><span class="header-section-number">3.1.1</span> Design Tradeoffs: Choosing <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> and <span class="math inline">\(L\)</span></h3>
+<p>Before sizing anything, two numbers have to be picked: the transconductance efficiency <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> and the channel length <span class="math inline">\(L\)</span>. Everything else follows from them, so it is worth understanding what each one buys and what it costs.</p>
+<p><span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> says how much transconductance you get per ampere of bias current, in <span class="math inline">\(\mathrm{S/A}\)</span>. It is a normalized, technology-independent measure of the <strong>inversion level</strong> of the device:</p>
+<div id="tbl-inversion" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-inversion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5: Inversion levels and what they mean.
+</figcaption>
+<div aria-describedby="tbl-inversion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 16%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Inversion level</th>
+<th style="text-align: center;"><span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> (<span class="math inline">\(\mathrm{S/A}\)</span>)</th>
+<th style="text-align: left;">Character</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Strong</strong></td>
+<td style="text-align: center;">below <span class="math inline">\(\approx 7.5\)</span></td>
+<td style="text-align: left;">Large overdrive, high current density <span class="math inline">\(I_\mathrm{D}/W\)</span>, so a given current needs little width. Fast, small, and area-efficient, but each ampere buys little <span class="math inline">\(g_\mathrm{m}\)</span>.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Moderate</strong></td>
+<td style="text-align: center;"><span class="math inline">\(\approx 7.5\)</span> to <span class="math inline">\(\approx 17.5\)</span></td>
+<td style="text-align: left;">The compromise region. The speed-efficiency product <span class="math inline">\(f_\mathrm{T} \cdot g_\mathrm{m}/I_\mathrm{D}\)</span> peaks here, which is why most amplifier stages end up in it.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Weak</strong></td>
+<td style="text-align: center;">above <span class="math inline">\(\approx 17.5\)</span></td>
+<td style="text-align: left;">Maximum <span class="math inline">\(g_\mathrm{m}\)</span> per ampere, so lowest power and highest intrinsic gain, with small <span class="math inline">\(V_\mathrm{ds,sat}\)</span> and therefore good voltage headroom. The price is width, capacitance, and speed.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>The channel length works largely independently of this. Long <span class="math inline">\(L\)</span> raises the output resistance <span class="math inline">\(r_\mathrm{ds}\)</span> and thus the intrinsic gain, improves matching, and lowers flicker noise (which scales with <span class="math inline">\(1/L^2\)</span> at constant <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span>). Short <span class="math inline">\(L\)</span> raises <span class="math inline">\(f_\mathrm{T}\)</span> and shrinks area and gate capacitance. Speed and gain therefore pull in opposite directions.</p>
+<p><a href="#fig-tradeoffs" class="quarto-xref">Figure&nbsp;2</a> maps both knobs onto one picture. The arrows point from the center towards the corner where each design parameter reaches its <strong>best</strong> value, so the same parameter is at its worst in the opposite direction.</p>
+<div id="fig-tradeoffs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-tradeoffs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<a href="fig/tradeoffs_gmid.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Overview of key design tradeoffs depending on the channel length L and the transconductance efficiency g_\mathrm{m}/I_\mathrm{D}. Taken from Tradeoffs in Saturation in the Analog Circuit Design course @ JKU."><img src="fig/tradeoffs_gmid.svg" class="img-fluid figure-img" style="width:75.0%"></a>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tradeoffs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Overview of key design tradeoffs depending on the channel length <span class="math inline">\(L\)</span> and the transconductance efficiency <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span>. Taken from <a href="https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-tradeoffs-saturation">Tradeoffs in Saturation</a> in the Analog Circuit Design course @ JKU.
+</figcaption>
+</figure>
+</div>
+<p>Read it corner by corner:</p>
+<ul>
+<li><strong>Strong inversion, short <span class="math inline">\(L\)</span></strong> (bottom left): <span class="math inline">\(f_\mathrm{T}\)</span> and input impedance <span class="math inline">\(Z_\mathrm{in}\)</span> are maximal, gate capacitance <span class="math inline">\(C_\mathrm{gg}\)</span> and area are minimal. This is the high-speed corner.</li>
+<li><strong>Strong inversion, medium <span class="math inline">\(L\)</span></strong> (left): minimal thermal noise PSD <span class="math inline">\(S_\mathrm{TH}\)</span> and maximal current density <span class="math inline">\(I_\mathrm{D}/W\)</span>.</li>
+<li><strong>Moderate inversion, short <span class="math inline">\(L\)</span></strong> (bottom): the speed-efficiency product <span class="math inline">\(f_\mathrm{T} \cdot g_\mathrm{m}/I_\mathrm{D}\)</span> is maximal, the best overall compromise between bandwidth and current.</li>
+<li><strong>Moderate inversion, long <span class="math inline">\(L\)</span></strong> (top): the output resistance <span class="math inline">\(r_\mathrm{ds} = 1/g_\mathrm{ds}\)</span> is maximal. This is where current sources belong.</li>
+<li><strong>Weak inversion, long <span class="math inline">\(L\)</span></strong> (top right): intrinsic gain <span class="math inline">\(g_\mathrm{m}/g_\mathrm{ds}\)</span> is maximal, while flicker corner frequency <span class="math inline">\(f_\mathrm{co}\)</span>, noise factor <span class="math inline">\(\gamma\)</span>, flicker noise <span class="math inline">\(S_\mathrm{FL}\)</span>, offset <span class="math inline">\(V_\mathrm{OS}\)</span>, and power <span class="math inline">\(P\)</span> are minimal. This is the low-power, low-noise, high-gain corner.</li>
+<li><strong>Weak inversion, medium <span class="math inline">\(L\)</span></strong> (right): overdrive <span class="math inline">\(V_\mathrm{od}\)</span> and <span class="math inline">\(V_\mathrm{ds,sat}\)</span> are minimal, so this corner gives the most voltage headroom.</li>
+</ul>
+<p>Two corners stay empty on purpose. Strong inversion with a long channel and weak inversion with a short channel optimize nothing, they combine the drawbacks of both settings, so in practice they make little sense.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Rules of thumb
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Fast circuits use <strong>strong inversion with short channels</strong>. Low-power and low-noise circuits use <strong>weak inversion with long channels</strong>. Current sources use <strong>moderate inversion with longer channels</strong>, to maximize their output resistance. Everything else starts in moderate inversion and is moved from there.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Where does our inverter sit?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The sizing below lands at <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D} = 3.76\,\mathrm{S/A}\)</span> with <span class="math inline">\(L = 1\,\mathrm{\mu m}\)</span>, which is deep strong inversion with a comparatively long channel, that is the corner the map leaves empty. This is a deliberate compromise for this example, not an oversight: the stage has to drive a <span class="math inline">\(10\,\mathrm{pF}\)</span> load, which demands a lot of <span class="math inline">\(g_\mathrm{m}\)</span> and therefore a lot of current, while the long channel keeps the intrinsic gain and the matching of this very simple circuit acceptable. It also explains the modest measured gain of about <span class="math inline">\(31\,\mathrm{dB}\)</span>. Keep the map in mind when you size your own blocks, where you are free to choose the operating point rather than inheriting it.</p>
+</div>
+</div>
+</section>
+<section id="sizing-the-inverter" class="level3" data-number="3.1.2">
+<h3 data-number="3.1.2" class="anchored" data-anchor-id="sizing-the-inverter"><span class="header-section-number">3.1.2</span> Sizing the Inverter</h3>
 <p>The notebook runs through the following steps:</p>
 <ol type="1">
 <li>Define the design targets: <span class="math inline">\(V_\mathrm{DD} = 1.5\,\mathrm{V}\)</span>, <span class="math inline">\(V_\mathrm{cm,in} = V_\mathrm{cm,out} = V_\mathrm{DD}/2 = 0.75\,\mathrm{V}\)</span>, <span class="math inline">\(I_\mathrm{out} = 0.75\,\mathrm{mA}\)</span>, <span class="math inline">\(C_\mathrm{load} = 10\,\mathrm{pF}\)</span>, and <span class="math inline">\(L = 1\,\mathrm{\mu m}\)</span>. <span class="math inline">\(L\)</span> is chosen longer than the minimum to increase intrinsic gain and reduce mismatch, at the cost of area and bandwidth.</li>
@@ -816,11 +911,11 @@ Figure&nbsp;1: The CMOS inverter circuit with dummy transistors.
 <li>Round the continuous widths to a practical finger configuration with equal finger counts for NMOS and PMOS (for better layout matching), and recompute the small-signal parameters with the final widths.</li>
 <li>Estimate the open-loop gain <span class="math inline">\(A_\mathrm{ol} = -g_\mathrm{m,tot} / g_\mathrm{ds,tot}\)</span> and the output resistance <span class="math inline">\(R_\mathrm{out} = 1/g_\mathrm{ds,tot}\)</span>.</li>
 </ol>
-<p>The resulting device geometry is summarized in <a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;5</a>. These are exactly the values you will enter in the schematic in <a href="#sec-schematic" class="quarto-xref">Section&nbsp;4</a>.</p>
+<p>The resulting device geometry is summarized in <a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;6</a>. These are exactly the values you will enter in the schematic in <a href="#sec-schematic" class="quarto-xref">Section&nbsp;4</a>.</p>
 <div id="tbl-sizing-geom" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-sizing-geom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;5: Sized device geometry of the inverter.
+Table&nbsp;6: Sized device geometry of the inverter.
 </figcaption>
 <div aria-describedby="tbl-sizing-geom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -887,11 +982,11 @@ f_\mathrm{cu} = \frac{1}{2\pi\,R_\mathrm{out}\,C_\mathrm{load}} = \frac{1}{2\pi 
 <p><span class="math display">\[
 f_\mathrm{T} = \frac{g_\mathrm{m,tot}}{2\pi\,C_\mathrm{load}} = \frac{6.28\,\mathrm{mS}}{2\pi \cdot 10\,\mathrm{pF}} = 100\,\mathrm{MHz}.
 \]</span></p>
-<p><a href="#tbl-sizing-vs-ac" class="quarto-xref">Table&nbsp;6</a> compares these hand calculations against the ac simulation results from the testbench in <a href="#sec-tb-ac" class="quarto-xref">Section&nbsp;4.4.1</a>. The agreement is very good, which confirms the lookup-table approach.</p>
+<p><a href="#tbl-sizing-vs-ac" class="quarto-xref">Table&nbsp;7</a> compares these hand calculations against the ac simulation results from the testbench in <a href="#sec-tb-ac" class="quarto-xref">Section&nbsp;4.4.1</a>. The agreement is very good, which confirms the lookup-table approach.</p>
 <div id="tbl-sizing-vs-ac" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-sizing-vs-ac-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;6: Calculated vs.&nbsp;simulated open-loop characteristics of the inverter.
+Table&nbsp;7: Calculated vs.&nbsp;simulated open-loop characteristics of the inverter.
 </figcaption>
 <div aria-describedby="tbl-sizing-vs-ac-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -942,6 +1037,7 @@ Tip
 </div>
 </div>
 </section>
+</section>
 <section id="sec-batch-sim" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="sec-batch-sim"><span class="header-section-number">3.2</span> Batch Simulation with the Makefile</h2>
 <p>Every testbench can be run non-interactively from the <code>inverter/</code> folder. This is useful for reproducible results and scripting.</p>
@@ -951,24 +1047,24 @@ Tip
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> sim-xschem TB=inverter_tb_tran</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> sim-all                              <span class="co"># all three in sequence</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> sim-view-xschem SCRIPT=plot_inverter <span class="co"># plot the exported data with Python</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>sim-xschem</code> netlists the testbench with <code>xschem netlist</code> and then calls <code>ngspice -b</code> directly, so <code>make</code> blocks until the run finishes and sees its exit status. Because the run is headless, the <code>plot</code> commands in the testbench are a no-op. Every testbench instead exports its results with <code>wrdata</code> to <code>testbenches/xschem/plot_simulations/data/</code>, from where the Python script plots them. <a href="#fig-ac-sim" class="quarto-xref">Figure&nbsp;2</a> and <a href="#fig-dc-sim" class="quarto-xref">Figure&nbsp;3</a> show the plotted results.</p>
+<p><code>sim-xschem</code> netlists the testbench with <code>xschem netlist</code> and then calls <code>ngspice -b</code> directly, so <code>make</code> blocks until the run finishes and sees its exit status. Because the run is headless, the <code>plot</code> commands in the testbench are a no-op. Every testbench instead exports its results with <code>wrdata</code> to <code>testbenches/xschem/plot_simulations/data/</code>, from where the Python script plots them. <a href="#fig-ac-sim" class="quarto-xref">Figure&nbsp;3</a> and <a href="#fig-dc-sim" class="quarto-xref">Figure&nbsp;4</a> show the plotted results.</p>
 <div id="fig-ac-sim" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-ac-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/inverter_tb_ac_ol_sim.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-2" title="Figure&nbsp;2: Simulated open-loop frequency response of the inverter (inverter_tb_ac_ol)."><img src="fig/inverter_tb_ac_ol_sim.svg" class="img-fluid figure-img" style="width:90.0%"></a>
+<a href="fig/inverter_tb_ac_ol_sim.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: Simulated open-loop frequency response of the inverter (inverter_tb_ac_ol)."><img src="fig/inverter_tb_ac_ol_sim.svg" class="img-fluid figure-img" style="width:90.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ac-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Simulated open-loop frequency response of the inverter (<code>inverter_tb_ac_ol</code>).
+Figure&nbsp;3: Simulated open-loop frequency response of the inverter (<code>inverter_tb_ac_ol</code>).
 </figcaption>
 </figure>
 </div>
 <div id="fig-dc-sim" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-dc-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/inverter_tb_dc_vout_sim.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-3" title="Figure&nbsp;3: Simulated voltage transfer characteristic of the inverter (inverter_tb_dc_vout)."><img src="fig/inverter_tb_dc_vout_sim.svg" class="img-fluid figure-img" style="width:80.0%"></a>
+<a href="fig/inverter_tb_dc_vout_sim.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;4: Simulated voltage transfer characteristic of the inverter (inverter_tb_dc_vout)."><img src="fig/inverter_tb_dc_vout_sim.svg" class="img-fluid figure-img" style="width:80.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dc-sim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Simulated voltage transfer characteristic of the inverter (<code>inverter_tb_dc_vout</code>).
+Figure&nbsp;4: Simulated voltage transfer characteristic of the inverter (<code>inverter_tb_dc_vout</code>).
 </figcaption>
 </figure>
 </div>
@@ -984,11 +1080,11 @@ Figure&nbsp;3: Simulated voltage transfer characteristic of the inverter (<code>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> inverter/schematic/xschem</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">xschem</span>                  <span class="co"># empty session</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">xschem</span> inverter.sch     <span class="co"># or load the schematic directly</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The most important shortcuts are listed in <a href="#tbl-xschem-keys" class="quarto-xref">Table&nbsp;7</a>. A complete list is available in Xschem under <code>Help -&gt; Keys</code> and in the <a href="https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-xschem-cheatsheet">Xschem Cheatsheet</a>.</p>
+<p>The most important shortcuts are listed in <a href="#tbl-xschem-keys" class="quarto-xref">Table&nbsp;8</a>. A complete list is available in Xschem under <code>Help -&gt; Keys</code> and in the <a href="https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-xschem-cheatsheet">Xschem Cheatsheet</a>.</p>
 <div id="tbl-xschem-keys" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-xschem-keys-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;7: Essential Xschem shortcuts.
+Table&nbsp;8: Essential Xschem shortcuts.
 </figcaption>
 <div aria-describedby="tbl-xschem-keys-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -1092,37 +1188,37 @@ Tip
 </section>
 <section id="sec-draw-schematic" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="sec-draw-schematic"><span class="header-section-number">4.2</span> Drawing the Inverter Schematic</h2>
-<p>We now draw the schematic shown in <a href="#fig-inverter-schematic" class="quarto-xref">Figure&nbsp;4</a> step by step. The reference is <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/schematic/xschem/inverter.sch"><code>inverter.sch</code></a>.</p>
+<p>We now draw the schematic shown in <a href="#fig-inverter-schematic" class="quarto-xref">Figure&nbsp;5</a> step by step. The reference is <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/schematic/xschem/inverter.sch"><code>inverter.sch</code></a>.</p>
 <div id="fig-inverter-schematic" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-inverter-schematic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/inverter_schematic.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-4" title="Figure&nbsp;4: The finished inverter schematic in Xschem, with dummy transistors and operating-point annotations."><img src="fig/inverter_schematic.svg" class="img-fluid figure-img" style="width:75.0%"></a>
+<a href="fig/inverter_schematic.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;5: The finished inverter schematic in Xschem, with dummy transistors and operating-point annotations."><img src="fig/inverter_schematic.svg" class="img-fluid figure-img" style="width:75.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-inverter-schematic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: The finished <code>inverter</code> schematic in Xschem, with dummy transistors and operating-point annotations.
+Figure&nbsp;5: The finished <code>inverter</code> schematic in Xschem, with dummy transistors and operating-point annotations.
 </figcaption>
 </figure>
 </div>
 <ol type="1">
 <li><strong>Place the transistors.</strong> Press <code>Ins</code>, and pick <code>sg13_lv_nmos.sym</code> and <code>sg13_lv_pmos.sym</code> from the PDK library. Place the NMOS <span class="math inline">\(M_1\)</span> at the bottom and the PMOS <span class="math inline">\(M_2\)</span> at the top.</li>
-<li><strong>Set the device parameters.</strong> Select a transistor and press <code>q</code>. Enter the values from <a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;5</a>, for example for <span class="math inline">\(M_1\)</span>: <code>l=1.0u</code>, <code>w=20.0u</code>, <code>ng=20</code>, <code>m=1</code>. Note that <code>w</code> is the total width and <code>ng</code> is the number of fingers. Keep <code>spiceprefix=X</code>, because the PSP transistor models of the PDK are SPICE subcircuits and must be instantiated with an <code>X</code> prefix.</li>
+<li><strong>Set the device parameters.</strong> Select a transistor and press <code>q</code>. Enter the values from <a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;6</a>, for example for <span class="math inline">\(M_1\)</span>: <code>l=1.0u</code>, <code>w=20.0u</code>, <code>ng=20</code>, <code>m=1</code>. Note that <code>w</code> is the total width and <code>ng</code> is the number of fingers. Keep <code>spiceprefix=X</code>, because the PSP transistor models of the PDK are SPICE subcircuits and must be instantiated with an <code>X</code> prefix.</li>
 <li><strong>Place the dummy transistors.</strong> Copy each device with <code>c</code> and change the properties to the dummy sizing (<code>w=2.0u</code>, <code>ng=2</code> for the NMOS and <code>w=12.0u</code>, <code>ng=2</code> for the PMOS). Wire all four dummy terminals to the respective supply rail (gate, source, drain, and bulk of <span class="math inline">\(M_\mathrm{dummy1}\)</span> to <code>VSS</code>, those of <span class="math inline">\(M_\mathrm{dummy2}\)</span> to <code>VDD</code>), so the dummies are off and only their geometry matters.</li>
 <li><strong>Wire the circuit.</strong> Press <code>w</code> and connect the gates of <span class="math inline">\(M_1\)</span> and <span class="math inline">\(M_2\)</span> to the input net, the drains to the output net, the NMOS source and bulk to <code>VSS</code>, and the PMOS source and bulk to <code>VDD</code>.</li>
 <li><strong>Add the pins.</strong> Press <code>Ins</code> and place <code>ipin.sym</code> for the input <code>vin</code>, <code>iopin.sym</code> for the output <code>vout</code>, and <code>iopin.sym</code> for <code>VDD</code> and <code>VSS</code>. The pin names define the port names of the subcircuit later used for LVS, so name them exactly <code>vin</code>, <code>vout</code>, <code>VDD</code>, and <code>VSS</code>.</li>
-<li><strong>Annotate (optional).</strong> Place <code>annotate_fet_params.sym</code> next to <span class="math inline">\(M_1\)</span> and <span class="math inline">\(M_2\)</span> and set <code>ref=M1</code> and <code>ref=M2</code>. After a simulation, these display the operating-point parameters of the devices directly in the schematic (as visible in <a href="#fig-inverter-schematic" class="quarto-xref">Figure&nbsp;4</a>).</li>
+<li><strong>Annotate (optional).</strong> Place <code>annotate_fet_params.sym</code> next to <span class="math inline">\(M_1\)</span> and <span class="math inline">\(M_2\)</span> and set <code>ref=M1</code> and <code>ref=M2</code>. After a simulation, these display the operating-point parameters of the devices directly in the schematic (as visible in <a href="#fig-inverter-schematic" class="quarto-xref">Figure&nbsp;5</a>).</li>
 <li><strong>Save</strong> with <code>Ctrl + s</code> as <code>inverter.sch</code>.</li>
 </ol>
 </section>
 <section id="sec-draw-symbol" class="level2" data-number="4.3">
 <h2 data-number="4.3" class="anchored" data-anchor-id="sec-draw-symbol"><span class="header-section-number">4.3</span> Drawing the Inverter Symbol</h2>
-<p>To use the inverter in a testbench, it needs a symbol. <a href="#fig-inverter-symbol" class="quarto-xref">Figure&nbsp;5</a> shows the finished symbol, the reference is <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/schematic/xschem/inverter.sym"><code>inverter.sym</code></a>.</p>
+<p>To use the inverter in a testbench, it needs a symbol. <a href="#fig-inverter-symbol" class="quarto-xref">Figure&nbsp;6</a> shows the finished symbol, the reference is <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/schematic/xschem/inverter.sym"><code>inverter.sym</code></a>.</p>
 <div id="fig-inverter-symbol" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-inverter-symbol-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/inverter_symbol.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-5" title="Figure&nbsp;5: The inverter symbol in Xschem."><img src="fig/inverter_symbol.svg" class="img-fluid figure-img" style="width:30.0%"></a>
+<a href="fig/inverter_symbol.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;6: The inverter symbol in Xschem."><img src="fig/inverter_symbol.svg" class="img-fluid figure-img" style="width:30.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-inverter-symbol-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: The <code>inverter</code> symbol in Xschem.
+Figure&nbsp;6: The <code>inverter</code> symbol in Xschem.
 </figcaption>
 </figure>
 </div>
@@ -1140,37 +1236,37 @@ Figure&nbsp;5: The <code>inverter</code> symbol in Xschem.
 <h2 data-number="4.4" class="anchored" data-anchor-id="sec-testbenches"><span class="header-section-number">4.4</span> Completing the Testbenches</h2>
 <p>Three testbenches characterize the inverter. Skeletons are already prepared in <a href="https://github.com/HeiChips/heichips26-analog-workshop/tree/main/inverter/testbenches/xschem"><code>testbenches/xschem/</code></a>, and we finish them together:</p>
 <ul>
-<li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/testbenches/xschem/inverter_tb_dc_vout.sch"><code>inverter_tb_dc_vout.sch</code></a> sweeps the input from <span class="math inline">\(0\)</span> to <span class="math inline">\(V_\mathrm{DD}\)</span> and records the voltage transfer characteristic (see <a href="#fig-tb-dc" class="quarto-xref">Figure&nbsp;6</a>).</li>
-<li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/testbenches/xschem/inverter_tb_ac_ol.sch"><code>inverter_tb_ac_ol.sch</code></a> measures the open-loop frequency response (see <a href="#fig-tb-ac" class="quarto-xref">Figure&nbsp;7</a>).</li>
-<li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/testbenches/xschem/inverter_tb_tran.sch"><code>inverter_tb_tran.sch</code></a> applies a small sine around the operating point and simulates in the time domain (see <a href="#fig-tb-tran" class="quarto-xref">Figure&nbsp;8</a>).</li>
+<li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/testbenches/xschem/inverter_tb_dc_vout.sch"><code>inverter_tb_dc_vout.sch</code></a> sweeps the input from <span class="math inline">\(0\)</span> to <span class="math inline">\(V_\mathrm{DD}\)</span> and records the voltage transfer characteristic (see <a href="#fig-tb-dc" class="quarto-xref">Figure&nbsp;7</a>).</li>
+<li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/testbenches/xschem/inverter_tb_ac_ol.sch"><code>inverter_tb_ac_ol.sch</code></a> measures the open-loop frequency response (see <a href="#fig-tb-ac" class="quarto-xref">Figure&nbsp;8</a>).</li>
+<li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/testbenches/xschem/inverter_tb_tran.sch"><code>inverter_tb_tran.sch</code></a> applies a small sine around the operating point and simulates in the time domain (see <a href="#fig-tb-tran" class="quarto-xref">Figure&nbsp;9</a>).</li>
 </ul>
 <div id="fig-tb-dc" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-tb-dc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/inverter_tb_dc_vout_schematic.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-6" title="Figure&nbsp;6: Testbench inverter_tb_dc_vout (dc input sweep)."><img src="fig/inverter_tb_dc_vout_schematic.svg" class="img-fluid figure-img"></a>
+<a href="fig/inverter_tb_dc_vout_schematic.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;7: Testbench inverter_tb_dc_vout (dc input sweep)."><img src="fig/inverter_tb_dc_vout_schematic.svg" class="img-fluid figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tb-dc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Testbench <code>inverter_tb_dc_vout</code> (dc input sweep).
+Figure&nbsp;7: Testbench <code>inverter_tb_dc_vout</code> (dc input sweep).
 </figcaption>
 </figure>
 </div>
 <div id="fig-tb-ac" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-tb-ac-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/inverter_tb_ac_ol_schematic.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-7" title="Figure&nbsp;7: Testbench inverter_tb_ac_ol (open-loop ac characterization)."><img src="fig/inverter_tb_ac_ol_schematic.svg" class="img-fluid figure-img"></a>
+<a href="fig/inverter_tb_ac_ol_schematic.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;8: Testbench inverter_tb_ac_ol (open-loop ac characterization)."><img src="fig/inverter_tb_ac_ol_schematic.svg" class="img-fluid figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tb-ac-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: Testbench <code>inverter_tb_ac_ol</code> (open-loop ac characterization).
+Figure&nbsp;8: Testbench <code>inverter_tb_ac_ol</code> (open-loop ac characterization).
 </figcaption>
 </figure>
 </div>
 <div id="fig-tb-tran" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-tb-tran-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/inverter_tb_tran_schematic.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-8" title="Figure&nbsp;8: Testbench inverter_tb_tran (transient response)."><img src="fig/inverter_tb_tran_schematic.svg" class="img-fluid figure-img"></a>
+<a href="fig/inverter_tb_tran_schematic.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;9: Testbench inverter_tb_tran (transient response)."><img src="fig/inverter_tb_tran_schematic.svg" class="img-fluid figure-img"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tb-tran-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8: Testbench <code>inverter_tb_tran</code> (transient response).
+Figure&nbsp;9: Testbench <code>inverter_tb_tran</code> (transient response).
 </figcaption>
 </figure>
 </div>
@@ -1282,11 +1378,11 @@ Tip
 <li><strong>Layers.</strong> Each drawing layer has three roles: <code>MetalX.drawing</code> carries the actual geometry, <code>MetalX.pin</code> marks pin shapes, and <code>MetalX.text</code> carries the pin labels used by LVS.</li>
 <li><strong>PCells.</strong> The PDK provides parametric cells (PCells) in the <code>SG13_dev</code> library, for example <code>nmos</code>, <code>pmos</code>, resistors (<code>rppd</code>, <code>rsil</code>, <code>rhigh</code>), capacitors (<code>cap_mfringe</code>, <code>moscap_n</code>, <code>moscap_p</code>), taps (<code>ntap1</code>, <code>ptap1</code>), the <code>guard_ring</code>, and <code>via_stack</code>.</li>
 </ul>
-<p>The most important shortcuts are listed in <a href="#tbl-klayout-keys" class="quarto-xref">Table&nbsp;8</a>, taken from the <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/klayout/klayout_cheatsheet.md">KLayout cheatsheet</a> in this repository.</p>
+<p>The most important shortcuts are listed in <a href="#tbl-klayout-keys" class="quarto-xref">Table&nbsp;9</a>, taken from the <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/klayout/klayout_cheatsheet.md">KLayout cheatsheet</a> in this repository.</p>
 <div id="tbl-klayout-keys" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-klayout-keys-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;8: Essential KLayout shortcuts with the productivity plugins installed.
+Table&nbsp;9: Essential KLayout shortcuts with the productivity plugins installed.
 </figcaption>
 <div aria-describedby="tbl-klayout-keys-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -1369,11 +1465,11 @@ Table&nbsp;8: Essential KLayout shortcuts with the productivity plugins installe
 </section>
 <section id="sec-klayout-plugins" class="level2" data-number="5.2">
 <h2 data-number="5.2" class="anchored" data-anchor-id="sec-klayout-plugins"><span class="header-section-number">5.2</span> The KLayout Productivity Suite</h2>
-<p>The <a href="https://github.com/iic-jku/klayout-productivity-suite">KLayout Productivity Suite</a> is a collection of plugins developed at JKU that make manual layout much faster. They were already installed with <code>make klayout-setup</code> in <a href="#sec-overview" class="quarto-xref">Section&nbsp;1</a>. The full documentation with animations is <a href="https://iic-jku.github.io/klayout-productivity-suite/doc/doc.html">here</a>. A short summary:</p>
+<p>The <a href="https://github.com/iic-jku/klayout-productivity-suite">KLayout Productivity Suite</a> is a collection of plugins developed at JKU that make manual layout much faster. They were installed with <code>make klayout-setup</code> in <a href="#sec-overview" class="quarto-xref">Section&nbsp;1</a>, or are already present from an earlier installation, since they live in your user directory <code>~/.klayout/salt/</code>. The full documentation with animations is <a href="https://iic-jku.github.io/klayout-productivity-suite/doc/doc.html">here</a>. A short summary:</p>
 <div id="tbl-plugins" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-plugins-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;9: The KLayout productivity plugins in a nutshell.
+Table&nbsp;10: The KLayout productivity plugins in a nutshell.
 </figcaption>
 <div aria-describedby="tbl-plugins-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -1428,11 +1524,11 @@ Table&nbsp;9: The KLayout productivity plugins in a nutshell.
 </section>
 <section id="sec-draw-layout" class="level2" data-number="5.3">
 <h2 data-number="5.3" class="anchored" data-anchor-id="sec-draw-layout"><span class="header-section-number">5.3</span> Drawing the Inverter Layout</h2>
-<p>We now draw the layout of the <code>inverter</code> cell. The finished result is shown in <a href="#fig-layout-render" class="quarto-xref">Figure&nbsp;9</a>.</p>
+<p>We now draw the layout of the <code>inverter</code> cell. The finished result is shown in <a href="#fig-layout-render" class="quarto-xref">Figure&nbsp;10</a>.</p>
 <ol type="1">
 <li><strong>Create the cell.</strong> <code>File &gt; New Layout</code>, top cell name <code>inverter</code>, DBU <span class="math inline">\(0.001\,\mathrm{\mu m}\)</span>.</li>
 <li><strong>Place the transistor PCells.</strong> Drag <code>nmos</code> and <code>pmos</code> from the <code>SG13_dev</code> library into the layout. Place the PMOS row above the NMOS row.</li>
-<li><strong>Match the schematic.</strong> Select each PCell and press <code>Q</code>. Set the same <code>w</code>, <code>l</code>, and <code>ng</code> values as in the schematic (<a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;5</a>): the NMOS with <span class="math inline">\(20 \times 1.0\,\mathrm{\mu m}\)</span> fingers and the PMOS with <span class="math inline">\(20 \times 6.0\,\mathrm{\mu m}\)</span> fingers, both with <span class="math inline">\(L = 1.0\,\mathrm{\mu m}\)</span>. Add the two dummy devices next to the active devices in the same way.</li>
+<li><strong>Match the schematic.</strong> Select each PCell and press <code>Q</code>. Set the same <code>w</code>, <code>l</code>, and <code>ng</code> values as in the schematic (<a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;6</a>): the NMOS with <span class="math inline">\(20 \times 1.0\,\mathrm{\mu m}\)</span> fingers and the PMOS with <span class="math inline">\(20 \times 6.0\,\mathrm{\mu m}\)</span> fingers, both with <span class="math inline">\(L = 1.0\,\mathrm{\mu m}\)</span>. Add the two dummy devices next to the active devices in the same way.</li>
 <li><strong>Substrate and well contacts.</strong> Place <code>ptap1</code> / <code>ntap1</code> contacts (or a <code>guard_ring</code>) to tie the substrate to <code>VSS</code> and the n-well of the PMOS to <code>VDD</code>.</li>
 <li><strong>Route.</strong> Connect the gates (input), the drains (output), and the source rails with <code>Metal1</code> and <code>Metal2</code>. Use the path tool <code>P</code>, place vias with <code>O</code> or with <code>via_stack</code> PCells. Keep signal routing on the lower metals within a macro. Use the layer shortcuts <code>1</code>, <code>2</code>, <code>8</code>, <code>9</code> to focus on the layer you are working on.</li>
 <li><strong>Add the pins.</strong> Select the target metal layer and press <code>Shift + P</code> to place the pins <code>vin</code>, <code>vout</code>, <code>VDD</code>, and <code>VSS</code>. The pin tool places the pin shape on <code>MetalX.pin</code> and the label on <code>MetalX.text</code>, which is exactly what LVS expects.</li>
@@ -1441,10 +1537,10 @@ Table&nbsp;9: The KLayout productivity plugins in a nutshell.
 <div id="fig-layout-render" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-layout-render-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/inverter_render_white.png" class="lightbox" data-gallery="quarto-lightbox-gallery-9" title="Figure&nbsp;9: Render of the finished inverter layout."><img src="fig/inverter_render_white.png" class="img-fluid figure-img" style="width:75.0%"></a>
+<a href="fig/inverter_render_white.png" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;10: Render of the finished inverter layout."><img src="fig/inverter_render_white.png" class="img-fluid figure-img" style="width:75.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-layout-render-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9: Render of the finished <code>inverter</code> layout.
+Figure&nbsp;10: Render of the finished <code>inverter</code> layout.
 </figcaption>
 </figure>
 </div>
@@ -1574,10 +1670,10 @@ Note
 <div id="fig-ex1" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-ex1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/exercise_selfbiased_amp.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor R_\mathrm{f}."><img src="fig/exercise_selfbiased_amp.svg" class="img-fluid figure-img" style="width:45.0%"></a>
+<a href="fig/exercise_selfbiased_amp.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Figure&nbsp;11: Self-biased inverter amplifier with feedback resistor R_\mathrm{f}."><img src="fig/exercise_selfbiased_amp.svg" class="img-fluid figure-img" style="width:45.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ex1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor <span class="math inline">\(R_\mathrm{f}\)</span>.
+Figure&nbsp;11: Self-biased inverter amplifier with feedback resistor <span class="math inline">\(R_\mathrm{f}\)</span>.
 </figcaption>
 </figure>
 </div>
@@ -1596,7 +1692,7 @@ Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor <span clas
 <li><p>Rename the KLayout layout file and the top cell:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> layout/inverter.gds layout/amp.gds</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Also rename the top cell inside the GDS from <code>inverter</code> to <code>amp</code>: open the layout in KLayout, rename the cell, and save. The verification targets require matching file and top-cell names.</p></li>
-<li><p>Open <code>amp.sch</code> in Xschem and add a resistor between the <code>vin</code> and <code>vout</code> nets, as shown in <a href="#fig-ex1" class="quarto-xref">Figure&nbsp;10</a>. For a first schematic-level study, the generic <code>res.sym</code> device is fine. Start with <span class="math inline">\(R_\mathrm{f} = 1\,\mathrm{M\Omega}\)</span>.</p></li>
+<li><p>Open <code>amp.sch</code> in Xschem and add a resistor between the <code>vin</code> and <code>vout</code> nets, as shown in <a href="#fig-ex1" class="quarto-xref">Figure&nbsp;11</a>. For a first schematic-level study, the generic <code>res.sym</code> device is fine. Start with <span class="math inline">\(R_\mathrm{f} = 1\,\mathrm{M\Omega}\)</span>.</p></li>
 <li><p>Think first, then simulate. What do you expect to happen to the dc transfer characteristic, the ac response, and the measured gain? Then re-run the three testbenches and check whether the results match your expectations. Note that the ac open-loop testbench drives <code>vin</code> directly with a source, so to observe the self-biasing effect, also try disconnecting the input bias and let the feedback set the operating point.</p></li>
 <li><p>Vary <span class="math inline">\(R_\mathrm{f}\)</span> and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. A value in the <span class="math inline">\(1\)</span> to <span class="math inline">\(10\,\mathrm{M\Omega}\)</span> range is a sensible choice for this sizing.</p></li>
 <li><p>Propagate the resistor to the layout (<code>layout/amp.gds</code>) using an <code>rppd</code> or <code>rhigh</code> PCell (also place dummy resistors next to it), and re-run the verification chain with <code>make klayout-verify</code> and <code>make magic-verify</code>.</p></li>
@@ -1604,14 +1700,14 @@ Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor <span clas
 </section>
 <section id="sec-exercise2" class="level2" data-number="6.2">
 <h2 data-number="6.2" class="anchored" data-anchor-id="sec-exercise2"><span class="header-section-number">6.2</span> Exercise 2: Three-Stage Ring Oscillator with Output Buffer</h2>
-<p>An odd number of inverters in a loop has no stable operating point and oscillates. Build a three-stage ring oscillator from the inverter cell and use a fourth inverter as an output buffer that decouples the ring from the load, as shown in <a href="#fig-ex2" class="quarto-xref">Figure&nbsp;11</a>.</p>
+<p>An odd number of inverters in a loop has no stable operating point and oscillates. Build a three-stage ring oscillator from the inverter cell and use a fourth inverter as an output buffer that decouples the ring from the load, as shown in <a href="#fig-ex2" class="quarto-xref">Figure&nbsp;12</a>.</p>
 <div id="fig-ex2" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-ex2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/exercise_ring_oscillator.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Figure&nbsp;11: Three-stage ring oscillator with the fourth inverter as output buffer."><img src="fig/exercise_ring_oscillator.svg" class="img-fluid figure-img" style="width:70.0%"></a>
+<a href="fig/exercise_ring_oscillator.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-12" title="Figure&nbsp;12: Three-stage ring oscillator with the fourth inverter as output buffer."><img src="fig/exercise_ring_oscillator.svg" class="img-fluid figure-img" style="width:70.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ex2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11: Three-stage ring oscillator with the fourth inverter as output buffer.
+Figure&nbsp;12: Three-stage ring oscillator with the fourth inverter as output buffer.
 </figcaption>
 </figure>
 </div>
@@ -1624,6 +1720,7 @@ Figure&nbsp;11: Three-stage ring oscillator with the fourth inverter as output b
 <li><p>Update the symbol <code>ringosc.sym</code> and the PEX symbol <code>ringosc_pex.sym</code>: remove the <code>vin</code> pin, the ring oscillator has no input. Alternatively, regenerate the symbol from the schematic (press <code>A</code>), following <a href="#sec-draw-symbol" class="quarto-xref">Section&nbsp;4.3</a> and <a href="#sec-pex-symbol" class="quarto-xref">Section&nbsp;4.5</a>.</p></li>
 <li><p>Adapt the renamed transient testbench <code>ringosc_tb_tran.sch</code>: remove the input source, and measure the oscillation frequency. Since the delay per stage is small, simulate a few hundred nanoseconds with a fine step. Measure the frequency, for example with two <code>meas tran ... when v(vout)=0.75 rise=...</code> commands that time consecutive rising crossings of <span class="math inline">\(V_\mathrm{cm}\)</span>, and compute <span class="math inline">\(f_\mathrm{osc} = 1/T\)</span>. The expected relation is <span class="math inline">\(f_\mathrm{osc} = 1/(2 \cdot N \cdot t_\mathrm{d})\)</span> with <span class="math inline">\(N = 3\)</span> stages and <span class="math inline">\(t_\mathrm{d}\)</span> the effective stage delay. Delete the testbenches that are no longer relevant.</p></li>
 <li><p>Think about the startup. An ideal simulation can rest on the metastable point where all stages sit at <span class="math inline">\(V_\mathrm{cm}\)</span>. If the ring does not start, kick it with an initial condition, for example <code>.ic v(osc)=0</code>.</p></li>
+<li><p>Resize the inverter and watch the frequency. Open <code>inverter.sch</code> and vary <span class="math inline">\(W\)</span>, <span class="math inline">\(L\)</span>, and the finger count <code>ng</code> of <span class="math inline">\(M_1\)</span> and <span class="math inline">\(M_2\)</span>, then re-run the transient simulation for each variant. Predict the outcome before you simulate, and use <a href="#sec-tradeoffs" class="quarto-xref">Section&nbsp;3.1.1</a> as your guide.</p></li>
 <li><p>Draw the top-level layout in <code>layout/ringosc.gds</code>, following <a href="#sec-draw-layout" class="quarto-xref">Section&nbsp;5.3</a>: create a new top cell <code>ringosc</code>, place four instances of the existing <code>inverter</code> cell, and route the ring. Re-run DRC and LVS, extract the parasitics with <code>make magic-pex</code>, and compare the post-layout oscillation frequency against the schematic level. The parasitics add delay per stage, so the frequency drops.</p></li>
 </ol>
 </section>
