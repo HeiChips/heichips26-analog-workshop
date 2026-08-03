@@ -753,6 +753,10 @@ Table&nbsp;4: Macro Makefile targets.
 <td style="text-align: left;"><code>make all</code></td>
 <td style="text-align: left;">Verify, build, and simulate everything</td>
 </tr>
+<tr class="odd">
+<td style="text-align: left;"><code>make clean</code></td>
+<td style="text-align: left;">Delete all generated files and folders (deliverables, netlists, reports, simulation outputs)</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1570,7 +1574,7 @@ Note
 <div id="fig-ex1" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-ex1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/exercise_selfbiased_amp.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor R_\mathrm{f}."><img src="fig/exercise_selfbiased_amp.svg" class="img-fluid figure-img" style="width:55.0%"></a>
+<a href="fig/exercise_selfbiased_amp.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-10" title="Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor R_\mathrm{f}."><img src="fig/exercise_selfbiased_amp.svg" class="img-fluid figure-img" style="width:45.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ex1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor <span class="math inline">\(R_\mathrm{f}\)</span>.
@@ -1579,10 +1583,23 @@ Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor <span clas
 </div>
 <p>Recommended steps:</p>
 <ol type="1">
-<li>Open <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/schematic/xschem/inverter.sch"><code>inverter.sch</code></a> in Xschem and add a resistor between the <code>vin</code> and <code>vout</code> nets, as shown in <a href="#fig-ex1" class="quarto-xref">Figure&nbsp;10</a>. For a first schematic-level study, the generic <code>res.sym</code> device is fine. Start with <span class="math inline">\(R_\mathrm{f} = 1\,\mathrm{M\Omega}\)</span>.</li>
-<li>Think first, then simulate. What do you expect to happen to the dc transfer characteristic, the ac response, and the measured gain? Then re-run the three testbenches and check whether the results match your expectations. Note that the ac open-loop testbench drives <code>vin</code> directly with a source, so to observe the self-biasing effect, also try disconnecting the input bias and let the feedback set the operating point.</li>
-<li>Vary <span class="math inline">\(R_\mathrm{f}\)</span> and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. A value in the <span class="math inline">\(1\)</span> to <span class="math inline">\(10\,\mathrm{M\Omega}\)</span> range is a sensible choice for this sizing.</li>
-<li>[Optional] Propagate the resistor to the layout using an <code>rppd</code> or <code>rhigh</code> PCell (also place dummy resistors next to it), and re-run the verification chain with <code>make klayout-verify</code> and <code>make magic-verify</code>.</li>
+<li><p>Copy the macro folder and delete the generated files:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> inverter amp</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> amp</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> clean</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></li>
+<li><p>Rename <code>TOP</code> in the <code>Makefile</code> to <code>TOP = amp</code>. All targets derive their file paths from <code>TOP</code> (and <code>CELL</code>, which defaults to <code>TOP</code>), so the design files must carry the same name.</p></li>
+<li><p>Rename the Xschem schematic, symbol, and testbench files:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f <span class="kw">in</span> schematic/xschem/inverter<span class="pp">*</span> testbenches/xschem/inverter<span class="pp">*</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mv</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> <span class="st">"</span><span class="va">$(</span><span class="bu">echo</span> <span class="st">"</span><span class="va">$f</span><span class="st">"</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">'s/inverter/amp/'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Since Xschem files are plain text, update the remaining <code>inverter</code> references inside the renamed files with search-and-replace, for example the <code>inverter.sym</code> instances and the <code>.include</code> of the PEX netlist in the testbenches.</p></li>
+<li><p>Rename the KLayout layout file and the top cell:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> layout/inverter.gds layout/amp.gds</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Also rename the top cell inside the GDS from <code>inverter</code> to <code>amp</code>: open the layout in KLayout, rename the cell, and save. The verification targets require matching file and top-cell names.</p></li>
+<li><p>Open <code>amp.sch</code> in Xschem and add a resistor between the <code>vin</code> and <code>vout</code> nets, as shown in <a href="#fig-ex1" class="quarto-xref">Figure&nbsp;10</a>. For a first schematic-level study, the generic <code>res.sym</code> device is fine. Start with <span class="math inline">\(R_\mathrm{f} = 1\,\mathrm{M\Omega}\)</span>.</p></li>
+<li><p>Think first, then simulate. What do you expect to happen to the dc transfer characteristic, the ac response, and the measured gain? Then re-run the three testbenches and check whether the results match your expectations. Note that the ac open-loop testbench drives <code>vin</code> directly with a source, so to observe the self-biasing effect, also try disconnecting the input bias and let the feedback set the operating point.</p></li>
+<li><p>Vary <span class="math inline">\(R_\mathrm{f}\)</span> and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. A value in the <span class="math inline">\(1\)</span> to <span class="math inline">\(10\,\mathrm{M\Omega}\)</span> range is a sensible choice for this sizing.</p></li>
+<li><p>Propagate the resistor to the layout (<code>layout/amp.gds</code>) using an <code>rppd</code> or <code>rhigh</code> PCell (also place dummy resistors next to it), and re-run the verification chain with <code>make klayout-verify</code> and <code>make magic-verify</code>.</p></li>
 </ol>
 </section>
 <section id="sec-exercise2" class="level2" data-number="6.2">
@@ -1591,7 +1608,7 @@ Figure&nbsp;10: Self-biased inverter amplifier with feedback resistor <span clas
 <div id="fig-ex2" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-ex2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<a href="fig/exercise_ring_oscillator.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Figure&nbsp;11: Three-stage ring oscillator with the fourth inverter as output buffer."><img src="fig/exercise_ring_oscillator.svg" class="img-fluid figure-img" style="width:75.0%"></a>
+<a href="fig/exercise_ring_oscillator.svg" class="lightbox" data-gallery="quarto-lightbox-gallery-11" title="Figure&nbsp;11: Three-stage ring oscillator with the fourth inverter as output buffer."><img src="fig/exercise_ring_oscillator.svg" class="img-fluid figure-img" style="width:70.0%"></a>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ex2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;11: Three-stage ring oscillator with the fourth inverter as output buffer.
@@ -1600,11 +1617,14 @@ Figure&nbsp;11: Three-stage ring oscillator with the fourth inverter as output b
 </div>
 <p>Recommended steps:</p>
 <ol type="1">
-<li>Create a new schematic (for example <code>ringosc.sch</code>) and place four instances of <code>inverter.sym</code>. Connect three of them in a ring, and tap the ring node with the fourth inverter as the buffer. Add the pins <code>vout</code>, <code>VDD</code>, and <code>VSS</code>.</li>
-<li>Create a symbol for the new cell (press <code>A</code>), following <a href="#sec-draw-symbol" class="quarto-xref">Section&nbsp;4.3</a>.</li>
-<li>Create a transient testbench. Since the delay per stage is small, simulate a few hundred nanoseconds with a fine step. Measure the oscillation frequency, for example with two <code>meas tran ... when v(vout)=0.75 rise=...</code> commands that time consecutive rising crossings of <span class="math inline">\(V_\mathrm{cm}\)</span>, and compute <span class="math inline">\(f_\mathrm{osc} = 1/T\)</span>. The expected relation is <span class="math inline">\(f_\mathrm{osc} = 1/(2 \cdot N \cdot t_\mathrm{d})\)</span> with <span class="math inline">\(N = 3\)</span> stages and <span class="math inline">\(t_\mathrm{d}\)</span> the effective stage delay.</li>
-<li>Think about the startup. An ideal simulation can rest on the metastable point where all stages sit at <span class="math inline">\(V_\mathrm{cm}\)</span>. If the ring does not start, kick it with an initial condition, for example <code>.ic v(osc)=0</code>.</li>
-<li>[Optional] Draw the layout with four instances of the <code>inverter</code> layout cell and route the ring, following <a href="#sec-draw-layout" class="quarto-xref">Section&nbsp;5.3</a>. Re-run DRC and LVS, extract the parasitics with <code>make magic-pex CELL=ringosc</code>, and compare the post-layout oscillation frequency against the schematic level. The parasitics add delay per stage, so the frequency drops.</li>
+<li><p>Follow the same setup recipe as in <a href="#sec-exercise1" class="quarto-xref">Section&nbsp;6.1</a> with <code>ringosc</code> instead of <code>amp</code>: copy the folder, run <code>make clean</code>, rename <code>TOP</code> in the <code>Makefile</code> to <code>TOP = ringosc</code>, rename the Xschem schematic, symbol, and testbench files, and rename the KLayout layout file to <code>layout/ringosc.gds</code>. One difference: do not rename the top cell inside the GDS yet, the <code>inverter</code> cell stays in use as the unit cell (see the last step).</p></li>
+<li><p>Restore the unit cell from the original macro, you instantiate it four times:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> ../inverter/schematic/xschem/inverter.sch ../inverter/schematic/xschem/inverter.sym schematic/xschem/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div></li>
+<li><p>Open <code>ringosc.sch</code> (it still contains the copied transistor-level inverter), delete its content, and place four instances of <code>inverter.sym</code>. Connect three of them in a ring, and tap the ring node with the fourth inverter as the buffer. Add the pins <code>vout</code>, <code>VDD</code>, and <code>VSS</code>.</p></li>
+<li><p>Update the symbol <code>ringosc.sym</code> and the PEX symbol <code>ringosc_pex.sym</code>: remove the <code>vin</code> pin, the ring oscillator has no input. Alternatively, regenerate the symbol from the schematic (press <code>A</code>), following <a href="#sec-draw-symbol" class="quarto-xref">Section&nbsp;4.3</a> and <a href="#sec-pex-symbol" class="quarto-xref">Section&nbsp;4.5</a>.</p></li>
+<li><p>Adapt the renamed transient testbench <code>ringosc_tb_tran.sch</code>: remove the input source, and measure the oscillation frequency. Since the delay per stage is small, simulate a few hundred nanoseconds with a fine step. Measure the frequency, for example with two <code>meas tran ... when v(vout)=0.75 rise=...</code> commands that time consecutive rising crossings of <span class="math inline">\(V_\mathrm{cm}\)</span>, and compute <span class="math inline">\(f_\mathrm{osc} = 1/T\)</span>. The expected relation is <span class="math inline">\(f_\mathrm{osc} = 1/(2 \cdot N \cdot t_\mathrm{d})\)</span> with <span class="math inline">\(N = 3\)</span> stages and <span class="math inline">\(t_\mathrm{d}\)</span> the effective stage delay. Delete the testbenches that are no longer relevant.</p></li>
+<li><p>Think about the startup. An ideal simulation can rest on the metastable point where all stages sit at <span class="math inline">\(V_\mathrm{cm}\)</span>. If the ring does not start, kick it with an initial condition, for example <code>.ic v(osc)=0</code>.</p></li>
+<li><p>Draw the top-level layout in <code>layout/ringosc.gds</code>, following <a href="#sec-draw-layout" class="quarto-xref">Section&nbsp;5.3</a>: create a new top cell <code>ringosc</code>, place four instances of the existing <code>inverter</code> cell, and route the ring. Re-run DRC and LVS, extract the parasitics with <code>make magic-pex</code>, and compare the post-layout oscillation frequency against the schematic level. The parasitics add delay per stage, so the frequency drops.</p></li>
 </ol>
 </section>
 </section>
