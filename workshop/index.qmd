@@ -140,8 +140,8 @@ All design steps are invoked through the macro [`Makefile`](https://github.com/H
 
 | Target | Description |
 | :----- | :---------- |
-| `make sim-xschem TB=<tb>` | Run one Xschem testbench in batch mode (netlist + `ngspice -b`) |
-| `make sim-view-xschem SCRIPT=plot_inverter` | Plot the exported simulation data with Python |
+| `make sim-xschem [TB=<tb>]` | Run one Xschem testbench in batch mode (netlist + `ngspice -b`) |
+| `make sim-view-xschem [SCRIPT=<script>]` | Plot the exported simulation data with Python |
 | `make sim-all` | Run all three testbenches in sequence |
 | `make klayout-drc` | Run KLayout DRC on the layout |
 | `make magic-drc` | Run Magic DRC on the layout |
@@ -156,7 +156,7 @@ All design steps are invoked through the macro [`Makefile`](https://github.com/H
 
 : Macro Makefile targets. {#tbl-macro-make}
 
-Most targets accept optional variables, for example `CELL=<cellname>` to select a specific cell (defaults to `inverter`), `EXT_MODE=<1|2|3>` for the PEX mode, and `DRC_LEVEL=<precheck|macro|regular>` for the KLayout DRC rule set. See the [inverter README](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/README.md) for the full list.
+Most targets accept optional variables, for example `CELL=<cellname>` to select a specific cell (defaults to `inverter`), `EXT_MODE=<1|2|3>` for the PEX mode, and `DRC_LEVEL=<precheck|macro|regular>` for the KLayout DRC rule set. `TB` and `SCRIPT` default to `<CELL>_tb_tran` and `plot_<CELL>`, so both simulation targets also run without arguments. See the [inverter README](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/README.md) for the full list.
 
 ::: {.callout-warning}
 [KLayout-PEX (kpex)](https://github.com/iic-jku/klayout-pex) does not support the `ihp-sg13cmos5l` PDK yet, so the `klayout-pex` target currently fails. Use `make magic-pex` for parasitic extraction.
