@@ -706,11 +706,11 @@ Table&nbsp;4: Macro Makefile targets.
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;"><code>make sim-xschem TB=&lt;tb&gt;</code></td>
+<td style="text-align: left;"><code>make sim-xschem [TB=&lt;tb&gt;]</code></td>
 <td style="text-align: left;">Run one Xschem testbench in batch mode (netlist + <code>ngspice -b</code>)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><code>make sim-view-xschem SCRIPT=plot_inverter</code></td>
+<td style="text-align: left;"><code>make sim-view-xschem [SCRIPT=&lt;script&gt;]</code></td>
 <td style="text-align: left;">Plot the exported simulation data with Python</td>
 </tr>
 <tr class="odd">
@@ -762,7 +762,7 @@ Table&nbsp;4: Macro Makefile targets.
 </div>
 </figure>
 </div>
-<p>Most targets accept optional variables, for example <code>CELL=&lt;cellname&gt;</code> to select a specific cell (defaults to <code>inverter</code>), <code>EXT_MODE=&lt;1|2|3&gt;</code> for the PEX mode, and <code>DRC_LEVEL=&lt;precheck|macro|regular&gt;</code> for the KLayout DRC rule set. See the <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/README.md">inverter README</a> for the full list.</p>
+<p>Most targets accept optional variables, for example <code>CELL=&lt;cellname&gt;</code> to select a specific cell (defaults to <code>inverter</code>), <code>EXT_MODE=&lt;1|2|3&gt;</code> for the PEX mode, and <code>DRC_LEVEL=&lt;precheck|macro|regular&gt;</code> for the KLayout DRC rule set. <code>TB</code> and <code>SCRIPT</code> default to <code>&lt;CELL&gt;_tb_tran</code> and <code>plot_&lt;CELL&gt;</code>, so both simulation targets also run without arguments. See the <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/README.md">inverter README</a> for the full list.</p>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
