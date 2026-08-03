@@ -152,6 +152,7 @@ All design steps are invoked through the macro [`Makefile`](https://github.com/H
 | `make magic-verify` | DRC, LVS, and PEX with Magic in one command |
 | `make build-top` | Build the deliverables (LEF, LIB, Verilog stub, GDS copy, render) |
 | `make all` | Verify, build, and simulate everything |
+| `make clean` | Delete all generated files and folders (deliverables, netlists, reports, simulation outputs) |
 
 : Macro Makefile targets. {#tbl-macro-make}
 
@@ -613,28 +614,60 @@ A reference implementation of the exercises will be provided in a separate branc
 
 The bare CMOS inverter has poor PVT robustness as an amplifier, because nothing pins the input bias to the high-gain point at $V_\mathrm{DD}/2$. A feedback resistor $R_\mathrm{f}$ between output and input closes a dc loop that forces the operating point to the crossover ($V_\mathrm{in} \approx V_\mathrm{out} \approx V_\mathrm{DD}/2$) regardless of the process corner. This also linearizes the transfer characteristic and turns the inverter into a usable single-ended amplifier. The price is a reduced input resistance of the resulting amplifier.
 
-![Self-biased inverter amplifier with feedback resistor $R_\mathrm{f}$.](fig/exercise_selfbiased_amp.svg){#fig-ex1 width=55%}
+![Self-biased inverter amplifier with feedback resistor $R_\mathrm{f}$.](fig/exercise_selfbiased_amp.svg){#fig-ex1 width=45%}
 
 Recommended steps:
 
-1. Open [`inverter.sch`](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/inverter/schematic/xschem/inverter.sch) in Xschem and add a resistor between the `vin` and `vout` nets, as shown in @fig-ex1. For a first schematic-level study, the generic `res.sym` device is fine. Start with $R_\mathrm{f} = 1\,\mathrm{M\Omega}$.
-2. Think first, then simulate. What do you expect to happen to the dc transfer characteristic, the ac response, and the measured gain? Then re-run the three testbenches and check whether the results match your expectations. Note that the ac open-loop testbench drives `vin` directly with a source, so to observe the self-biasing effect, also try disconnecting the input bias and let the feedback set the operating point.
-3. Vary $R_\mathrm{f}$ and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. A value in the $1$ to $10\,\mathrm{M\Omega}$ range is a sensible choice for this sizing.
-4. [Optional] Propagate the resistor to the layout using an `rppd` or `rhigh` PCell (also place dummy resistors next to it), and re-run the verification chain with `make klayout-verify` and `make magic-verify`.
+1. Copy the macro folder and delete the generated files:
+
+   ```sh
+   cp -r inverter amp
+   cd amp
+   make clean
+   ```
+
+2. Rename `TOP` in the `Makefile` to `TOP = amp`. All targets derive their file paths from `TOP` (and `CELL`, which defaults to `TOP`), so the design files must carry the same name.
+3. Rename the Xschem schematic, symbol, and testbench files:
+
+   ```sh
+   for f in schematic/xschem/inverter* testbenches/xschem/inverter*; do
+       mv "$f" "$(echo "$f" | sed 's/inverter/amp/')"
+   done
+   ```
+
+   Since Xschem files are plain text, update the remaining `inverter` references inside the renamed files with search-and-replace, for example the `inverter.sym` instances and the `.include` of the PEX netlist in the testbenches.
+4. Rename the KLayout layout file and the top cell:
+
+   ```sh
+   mv layout/inverter.gds layout/amp.gds
+   ```
+
+   Also rename the top cell inside the GDS from `inverter` to `amp`: open the layout in KLayout, rename the cell, and save. The verification targets require matching file and top-cell names.
+5. Open `amp.sch` in Xschem and add a resistor between the `vin` and `vout` nets, as shown in @fig-ex1. For a first schematic-level study, the generic `res.sym` device is fine. Start with $R_\mathrm{f} = 1\,\mathrm{M\Omega}$.
+6. Think first, then simulate. What do you expect to happen to the dc transfer characteristic, the ac response, and the measured gain? Then re-run the three testbenches and check whether the results match your expectations. Note that the ac open-loop testbench drives `vin` directly with a source, so to observe the self-biasing effect, also try disconnecting the input bias and let the feedback set the operating point.
+7. Vary $R_\mathrm{f}$ and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. A value in the $1$ to $10\,\mathrm{M\Omega}$ range is a sensible choice for this sizing.
+8. Propagate the resistor to the layout (`layout/amp.gds`) using an `rppd` or `rhigh` PCell (also place dummy resistors next to it), and re-run the verification chain with `make klayout-verify` and `make magic-verify`.
 
 ## Exercise 2: Three-Stage Ring Oscillator with Output Buffer {#sec-exercise2}
 
 An odd number of inverters in a loop has no stable operating point and oscillates. Build a three-stage ring oscillator from the inverter cell and use a fourth inverter as an output buffer that decouples the ring from the load, as shown in @fig-ex2.
 
-![Three-stage ring oscillator with the fourth inverter as output buffer.](fig/exercise_ring_oscillator.svg){#fig-ex2 width=75%}
+![Three-stage ring oscillator with the fourth inverter as output buffer.](fig/exercise_ring_oscillator.svg){#fig-ex2 width=70%}
 
 Recommended steps:
 
-1. Create a new schematic (for example `ringosc.sch`) and place four instances of `inverter.sym`. Connect three of them in a ring, and tap the ring node with the fourth inverter as the buffer. Add the pins `vout`, `VDD`, and `VSS`.
-2. Create a symbol for the new cell (press `A`), following @sec-draw-symbol.
-3. Create a transient testbench. Since the delay per stage is small, simulate a few hundred nanoseconds with a fine step. Measure the oscillation frequency, for example with two `meas tran ... when v(vout)=0.75 rise=...` commands that time consecutive rising crossings of $V_\mathrm{cm}$, and compute $f_\mathrm{osc} = 1/T$. The expected relation is $f_\mathrm{osc} = 1/(2 \cdot N \cdot t_\mathrm{d})$ with $N = 3$ stages and $t_\mathrm{d}$ the effective stage delay.
-4. Think about the startup. An ideal simulation can rest on the metastable point where all stages sit at $V_\mathrm{cm}$. If the ring does not start, kick it with an initial condition, for example `.ic v(osc)=0`.
-5. [Optional] Draw the layout with four instances of the `inverter` layout cell and route the ring, following @sec-draw-layout. Re-run DRC and LVS, extract the parasitics with `make magic-pex CELL=ringosc`, and compare the post-layout oscillation frequency against the schematic level. The parasitics add delay per stage, so the frequency drops.
+1. Follow the same setup recipe as in @sec-exercise1 with `ringosc` instead of `amp`: copy the folder, run `make clean`, rename `TOP` in the `Makefile` to `TOP = ringosc`, rename the Xschem schematic, symbol, and testbench files, and rename the KLayout layout file to `layout/ringosc.gds`. One difference: do not rename the top cell inside the GDS yet, the `inverter` cell stays in use as the unit cell (see the last step).
+2. Restore the unit cell from the original macro, you instantiate it four times:
+
+   ```sh
+   cp ../inverter/schematic/xschem/inverter.sch ../inverter/schematic/xschem/inverter.sym schematic/xschem/
+   ```
+
+3. Open `ringosc.sch` (it still contains the copied transistor-level inverter), delete its content, and place four instances of `inverter.sym`. Connect three of them in a ring, and tap the ring node with the fourth inverter as the buffer. Add the pins `vout`, `VDD`, and `VSS`.
+4. Update the symbol `ringosc.sym` and the PEX symbol `ringosc_pex.sym`: remove the `vin` pin, the ring oscillator has no input. Alternatively, regenerate the symbol from the schematic (press `A`), following @sec-draw-symbol and @sec-pex-symbol.
+5. Adapt the renamed transient testbench `ringosc_tb_tran.sch`: remove the input source, and measure the oscillation frequency. Since the delay per stage is small, simulate a few hundred nanoseconds with a fine step. Measure the frequency, for example with two `meas tran ... when v(vout)=0.75 rise=...` commands that time consecutive rising crossings of $V_\mathrm{cm}$, and compute $f_\mathrm{osc} = 1/T$. The expected relation is $f_\mathrm{osc} = 1/(2 \cdot N \cdot t_\mathrm{d})$ with $N = 3$ stages and $t_\mathrm{d}$ the effective stage delay. Delete the testbenches that are no longer relevant.
+6. Think about the startup. An ideal simulation can rest on the metastable point where all stages sit at $V_\mathrm{cm}$. If the ring does not start, kick it with an initial condition, for example `.ic v(osc)=0`.
+7. Draw the top-level layout in `layout/ringosc.gds`, following @sec-draw-layout: create a new top cell `ringosc`, place four instances of the existing `inverter` cell, and route the ring. Re-run DRC and LVS, extract the parasitics with `make magic-pex`, and compare the post-layout oscillation frequency against the schematic level. The parasitics add delay per stage, so the frequency drops.
 
 # Acknowledgements
 

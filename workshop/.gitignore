@@ -2,4 +2,5 @@
 /_site/
 index.pdf
 fig/*.pdf
+!fig/exercise_*.pdf
 **/*.quarto_ipynb
