@@ -522,7 +522,7 @@ Verification runs first because DRC/LVS/PEX produce the fresh, pin-reordered PEX
 - `final/` (GDS, LEF, LIB, Verilog stub, and layout render deliverables)
 - `netlist/` (schematic, layout, and PEX netlists)
 - `verification/drc/` and `verification/lvs/` (DRC and LVS reports)
-- `testbenches/xschem/simulations/` and the `plot_simulations/` outputs (`data/`, `figures/`, `__pycache__/`)
+- `testbenches/xschem/simulations/`, the `plot_simulations/__pycache__/`, and the content of `plot_simulations/data/` and `plot_simulations/figures/`
 - the CACE outputs under `verification/cace/` (`_runs/`, `_docs/`, `netlist/`, `results/`)
 
 Every Makefile target recreates its output folders, so a clean rebuild is simply:
