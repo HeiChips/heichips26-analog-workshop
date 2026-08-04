@@ -4,6 +4,8 @@ HeiChips 2026 Analog Workshop
 
 > [!IMPORTANT]
 > The workshop tutorial is available at: <https://heichips.github.io/heichips26-analog-workshop/>
+>
+> The workshop slides are available here: [HeiChips2026_Analog-Workshop_Slides.pdf](workshop/HeiChips2026_Analog-Workshop_Slides.pdf)
 
 Table Of Contents
 
