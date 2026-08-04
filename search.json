@@ -4,14 +4,14 @@
     "href": "index.html",
     "title": "HeiChips 2026 Analog Workshop",
     "section": "",
-    "text": "Important\n\n\n\nThis workshop is based on a more advanced chip design tutorial for the ihp-sg13g2 PDK and the IIC-OSIC-TOOLS container: A Tutorial on Open-Source Analog-Mixed Signal Chip Design with the ihp-sg13g2 Open-PDK. If you want to go beyond this workshop, for example digital macros, top-level assembly, padframe generation, and tapeout preparation, that tutorial is the recommended next step."
+    "text": "TipWorkshop Slides\n\n\n\nThe slides presented during the workshop are available here: HeiChips2026_Analog-Workshop_Slides.pdf."
   },
   {
     "objectID": "index.html#sec-cheatsheets",
     "href": "index.html#sec-cheatsheets",
     "title": "HeiChips 2026 Analog Workshop",
     "section": "1.1 Guidelines & Cheatsheets",
-    "text": "1.1 Guidelines & Cheatsheets\nThe following guidelines and cheatsheets are helpful during the workshop and for your own projects afterwards. Some of them are located directly in the doc/ folder of this repository.\n\nDesigner’s Guidelines\nLinux Cheatsheet\nXschem Cheatsheet\nNgspice Cheatsheet\nKLayout Cheatsheet (in doc/klayout/)\nKLayout Productivity Suite / Plugins\nihp-sg13cmos5l Layout Calculation Cheatsheet (in doc/ihp-sg13cmos5l-Open-PDK/)\nihp-sg13cmos5l Layout Rules and Process Specification\nihp-sg13cmos5l LV and HV NMOS / PMOS Techsweeps (in doc/sizing/)"
+    "text": "1.1 Guidelines & Cheatsheets\nThe following guidelines and cheatsheets are helpful during the workshop and for your own projects afterwards. Some of them are located directly in the doc/ folder of this repository.\n\nDesigner’s Guidelines\nLinux Cheatsheet\nXschem Cheatsheet\nNgspice Cheatsheet\nKLayout Cheatsheet (in doc/klayout/)\nKLayout Productivity Suite / Plugins\nihp-sg13cmos5l Layout Calculation Cheatsheet (in doc/ihp-sg13cmos5l-Open-PDK/)\nihp-sg13cmos5l Layout Rules and Process Specification (in doc/ihp-sg13cmos5l-Open-PDK/)\nihp-sg13cmos5l LV and HV NMOS / PMOS Techsweeps (in doc/sizing/)"
   },
   {
     "objectID": "index.html#directory-structure",

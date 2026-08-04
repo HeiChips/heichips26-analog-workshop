@@ -450,6 +450,19 @@ window.Quarto = {
 </header>
 
 
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Workshop Slides
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The slides presented during the workshop are available here: <a href="HeiChips2026_Analog-Workshop_Slides.pdf">HeiChips2026_Analog-Workshop_Slides.pdf</a>.</p>
+</div>
+</div>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -461,19 +474,6 @@ Important
 </div>
 <div class="callout-body-container callout-body">
 <p>This workshop is based on a more advanced chip design tutorial for the ihp-sg13g2 PDK and the IIC-OSIC-TOOLS container: <a href="https://iic-jku.github.io/ihp-sg13g2-ams-chip-template/index.html">A Tutorial on Open-Source Analog-Mixed Signal Chip Design with the ihp-sg13g2 Open-PDK</a>. If you want to go beyond this workshop, for example digital macros, top-level assembly, padframe generation, and tapeout preparation, that tutorial is the recommended next step.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>We happily accept <a href="https://github.com/HeiChips/heichips26-analog-workshop/pulls">pull requests</a> to fix typos or add content! If you want to discuss something that is not clear, please <a href="https://github.com/HeiChips/heichips26-analog-workshop/issues">open an issue</a>!</p>
 </div>
 </div>
 <section id="sec-overview" class="level1" data-number="1">
@@ -561,7 +561,7 @@ Note
 <li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/klayout/klayout_cheatsheet.md">KLayout Cheatsheet</a> (in <code>doc/klayout/</code>)</li>
 <li><a href="https://iic-jku.github.io/klayout-productivity-suite/doc/doc.html">KLayout Productivity Suite / Plugins</a></li>
 <li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_layout_cheatsheet.xlsx">ihp-sg13cmos5l Layout Calculation Cheatsheet</a> (in <code>doc/ihp-sg13cmos5l-Open-PDK/</code>)</li>
-<li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_layout_rules.pdf">ihp-sg13cmos5l Layout Rules</a> and <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_process_spec.pdf">Process Specification</a></li>
+<li><a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_layout_rules.pdf">ihp-sg13cmos5l Layout Rules</a> and <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_process_spec.pdf">Process Specification</a> (in <code>doc/ihp-sg13cmos5l-Open-PDK/</code>)</li>
 <li><a href="https://github.com/HeiChips/heichips26-analog-workshop/tree/main/doc/sizing">ihp-sg13cmos5l LV and HV NMOS / PMOS Techsweeps</a> (in <code>doc/sizing/</code>)</li>
 </ul>
 </section>
@@ -794,7 +794,7 @@ Note
 <p>An inverter can act as a digital circuit, when the input is driven by a digital signal and the output switches between the supply rails. Here we characterize the inverter as an analog circuit. We are interested in its continuous voltage transfer characteristic and its small-signal voltage gain around the operating point.</p>
 </div>
 </div>
-<p><a href="#fig-inverter-circuit" class="quarto-xref">Figure&nbsp;1</a> shows the circuit. The NMOS <span class="math inline">\(M_1\)</span> and the PMOS <span class="math inline">\(M_2\)</span> form the complementary inverter. The transistors <span class="math inline">\(M_\mathrm{dummy1}\)</span> and <span class="math inline">\(M_\mathrm{dummy2}\)</span> are dummy devices. They do not contribute to the circuit function but improve matching in the layout, because the active transistors then see identical neighboring structures on both sides.</p>
+<p><a href="#fig-inverter-circuit" class="quarto-xref">Figure&nbsp;1</a> shows the circuit. The NMOS <span class="math inline">\(M_1\)</span> and the PMOS <span class="math inline">\(M_2\)</span> form the complementary inverter. The transistors <span class="math inline">\(M_\mathrm{dummy1}\)</span> and <span class="math inline">\(M_\mathrm{dummy2}\)</span> are dummy devices. They do not contribute to the circuit function but improve matching in the layout, because the active transistors then see identical neighboring structures on both sides. We look at them in detail in <strong>?@sec-dummies</strong>.</p>
 <div id="fig-inverter-circuit" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-inverter-circuit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
