@@ -19,12 +19,14 @@ format:
     toc: true
 ---
 
-::: {.callout-important}
-This workshop is based on a more advanced chip design tutorial for the ihp-sg13g2 PDK and the IIC-OSIC-TOOLS container: [A Tutorial on Open-Source Analog-Mixed Signal Chip Design with the ihp-sg13g2 Open-PDK](https://iic-jku.github.io/ihp-sg13g2-ams-chip-template/index.html). If you want to go beyond this workshop, for example digital macros, top-level assembly, padframe generation, and tapeout preparation, that tutorial is the recommended next step.
+::: {.callout-tip}
+## Workshop Slides
+
+The slides presented during the workshop are available here: [HeiChips2026_Analog-Workshop_Slides.pdf](HeiChips2026_Analog-Workshop_Slides.pdf).
 :::
 
-::: {.callout-note}
-We happily accept [pull requests](https://github.com/HeiChips/heichips26-analog-workshop/pulls) to fix typos or add content! If you want to discuss something that is not clear, please [open an issue](https://github.com/HeiChips/heichips26-analog-workshop/issues)!
+::: {.callout-important}
+This workshop is based on a more advanced chip design tutorial for the ihp-sg13g2 PDK and the IIC-OSIC-TOOLS container: [A Tutorial on Open-Source Analog-Mixed Signal Chip Design with the ihp-sg13g2 Open-PDK](https://iic-jku.github.io/ihp-sg13g2-ams-chip-template/index.html). If you want to go beyond this workshop, for example digital macros, top-level assembly, padframe generation, and tapeout preparation, that tutorial is the recommended next step.
 :::
 
 # Workshop Overview {#sec-overview}
@@ -83,7 +85,7 @@ The following guidelines and cheatsheets are helpful during the workshop and for
 - [KLayout Cheatsheet](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/klayout/klayout_cheatsheet.md) (in `doc/klayout/`)
 - [KLayout Productivity Suite / Plugins](https://iic-jku.github.io/klayout-productivity-suite/doc/doc.html)
 - [ihp-sg13cmos5l Layout Calculation Cheatsheet](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_layout_cheatsheet.xlsx) (in `doc/ihp-sg13cmos5l-Open-PDK/`)
-- [ihp-sg13cmos5l Layout Rules](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_layout_rules.pdf) and [Process Specification](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_process_spec.pdf)
+- [ihp-sg13cmos5l Layout Rules](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_layout_rules.pdf) and [Process Specification](https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/ihp-sg13cmos5l-Open-PDK/sg13cmos5l_os_process_spec.pdf) (in `doc/ihp-sg13cmos5l-Open-PDK/`)
 - [ihp-sg13cmos5l LV and HV NMOS / PMOS Techsweeps](https://github.com/HeiChips/heichips26-analog-workshop/tree/main/doc/sizing) (in `doc/sizing/`)
 
 # Repository and Makefile Overview {#sec-repo}
@@ -169,7 +171,7 @@ The [`inverter`](https://github.com/HeiChips/heichips26-analog-workshop/tree/mai
 An inverter can act as a digital circuit, when the input is driven by a digital signal and the output switches between the supply rails. Here we characterize the inverter as an analog circuit. We are interested in its continuous voltage transfer characteristic and its small-signal voltage gain around the operating point.
 :::
 
-@fig-inverter-circuit shows the circuit. The NMOS $M_1$ and the PMOS $M_2$ form the complementary inverter. The transistors $M_\mathrm{dummy1}$ and $M_\mathrm{dummy2}$ are dummy devices. They do not contribute to the circuit function but improve matching in the layout, because the active transistors then see identical neighboring structures on both sides.
+@fig-inverter-circuit shows the circuit. The NMOS $M_1$ and the PMOS $M_2$ form the complementary inverter. The transistors $M_\mathrm{dummy1}$ and $M_\mathrm{dummy2}$ are dummy devices. They do not contribute to the circuit function but improve matching in the layout, because the active transistors then see identical neighboring structures on both sides. We look at them in detail in @sec-dummies.
 
 ![The CMOS inverter circuit with dummy transistors.](fig/inverter_circuit.svg){#fig-inverter-circuit width=45%}
 
