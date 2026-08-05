@@ -171,7 +171,7 @@ The [`inverter`](https://github.com/HeiChips/heichips26-analog-workshop/tree/mai
 An inverter can act as a digital circuit, when the input is driven by a digital signal and the output switches between the supply rails. Here we characterize the inverter as an analog circuit. We are interested in its continuous voltage transfer characteristic and its small-signal voltage gain around the operating point.
 :::
 
-@fig-inverter-circuit shows the circuit. The NMOS $M_1$ and the PMOS $M_2$ form the complementary inverter. The transistors $M_\mathrm{dummy1}$ and $M_\mathrm{dummy2}$ are dummy devices. They do not contribute to the circuit function but improve matching in the layout, because the active transistors then see identical neighboring structures on both sides. We look at them in detail in @sec-dummies.
+@fig-inverter-circuit shows the circuit. The NMOS $M_1$ and the PMOS $M_2$ form the complementary inverter. The transistors $M_\mathrm{dummy1}$ and $M_\mathrm{dummy2}$ are dummy devices. They do not contribute to the circuit function but improve matching in the layout, because the active transistors then see identical neighboring structures on both sides.
 
 ![The CMOS inverter circuit with dummy transistors.](fig/inverter_circuit.svg){#fig-inverter-circuit width=45%}
 
@@ -183,19 +183,9 @@ The inverter is sized with the $g_\mathrm{m}/I_\mathrm{D}$ method (see [Transist
 
 Before sizing anything, two numbers have to be picked: the transconductance efficiency $g_\mathrm{m}/I_\mathrm{D}$ and the channel length $L$. Everything else follows from them, so it is worth understanding what each one buys and what it costs.
 
-$g_\mathrm{m}/I_\mathrm{D}$ says how much transconductance you get per ampere of bias current, in $\mathrm{S/A}$. It is a normalized, technology-independent measure of the **inversion level** of the device:
+$g_\mathrm{m}/I_\mathrm{D}$ says how much transconductance you get per ampere of bias current, in $\mathrm{S/A}$. It is a normalized, technology-independent measure of the **inversion level** of the device.
 
-| Inversion level | $g_\mathrm{m}/I_\mathrm{D}$ ($\mathrm{S/A}$) | Character |
-| :-------------- | :---: | :--------- |
-| **Strong** | below $\approx 7.5$ | Large overdrive, high current density $I_\mathrm{D}/W$, so a given current needs little width. Fast, small, and area-efficient, but each ampere buys little $g_\mathrm{m}$. |
-| **Moderate** | $\approx 7.5$ to $\approx 17.5$ | The compromise region. The speed-efficiency product $f_\mathrm{T} \cdot g_\mathrm{m}/I_\mathrm{D}$ peaks here, which is why most amplifier stages end up in it. |
-| **Weak** | above $\approx 17.5$ | Maximum $g_\mathrm{m}$ per ampere, so lowest power and highest intrinsic gain, with small $V_\mathrm{ds,sat}$ and therefore good voltage headroom. The price is width, capacitance, and speed. |
-
-: Inversion levels and what they mean. {#tbl-inversion}
-
-The channel length works largely independently of this. Long $L$ raises the output resistance $r_\mathrm{ds}$ and thus the intrinsic gain, improves matching, and lowers flicker noise (which scales with $1/L^2$ at constant $g_\mathrm{m}/I_\mathrm{D}$). Short $L$ raises $f_\mathrm{T}$ and shrinks area and gate capacitance. Speed and gain therefore pull in opposite directions.
-
-@fig-tradeoffs maps both knobs onto one picture. The arrows point from the center towards the corner where each design parameter reaches its **best** value, so the same parameter is at its worst in the opposite direction.
+@fig-tradeoffs shows the tradeoffs in one picture. The arrows point from the center towards the corner where each design parameter reaches its **best** value, so the same parameter is at its worst in the opposite direction.
 
 ![Overview of key design tradeoffs depending on the channel length $L$ and the transconductance efficiency $g_\mathrm{m}/I_\mathrm{D}$. Taken from [Tradeoffs in Saturation](https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-tradeoffs-saturation) in the Analog Circuit Design course @ JKU.](fig/tradeoffs_gmid.svg){#fig-tradeoffs width=75%}
 
@@ -689,10 +679,10 @@ Recommended steps:
    ```
 
    Also rename the top cell inside the GDS from `inverter` to `amp`: open the layout in KLayout, rename the cell, and save. The verification targets require matching file and top-cell names.
-5. Open `amp.sch` in Xschem and add a resistor between the `vin` and `vout` nets, as shown in @fig-ex1. For a first schematic-level study, the generic `res.sym` device is fine. Start with $R_\mathrm{f} = 1\,\mathrm{M\Omega}$.
+5. Open `amp.sch` in Xschem and add the feedback resistor between the `vin` and `vout` nets, as shown in @fig-ex1. Use the `rhigh` device of the PDK (`sg13cmos5l_pr/rhigh.sym`), the high-sheet poly resistor, and set $W = 0.5\,\mathrm{\mu m}$ and $L = 25\,\mathrm{\mu m}$ with `q`. Keep `spiceprefix=X` and connect the `body` terminal to `VSS`. The symbol computes its value from the geometry, which gives $R_\mathrm{f} \approx 74\,\mathrm{k\Omega}$ for these dimensions.
 6. Think first, then simulate. What do you expect to happen to the dc transfer characteristic, the ac response, and the measured gain? Then re-run the three testbenches and check whether the results match your expectations. Note that the ac open-loop testbench drives `vin` directly with a source, so to observe the self-biasing effect, also try disconnecting the input bias and let the feedback set the operating point.
-7. Vary $R_\mathrm{f}$ and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. A value in the $1$ to $10\,\mathrm{M\Omega}$ range is a sensible choice for this sizing.
-8. Propagate the resistor to the layout (`layout/amp.gds`) using an `rppd` or `rhigh` PCell (also place dummy resistors next to it), and re-run the verification chain with `make klayout-verify` and `make magic-verify`.
+7. Vary $R_\mathrm{f}$ and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. The resistance scales with the length, roughly $3\,\mathrm{k\Omega}$ per $\mathrm{\mu m}$ at $W = 0.5\,\mathrm{\mu m}$, so $L = 10\,\mathrm{\mu m}$ gives about $30\,\mathrm{k\Omega}$ and $L = 100\,\mathrm{\mu m}$ about $300\,\mathrm{k\Omega}$. Keep $W$ at $0.5\,\mathrm{\mu m}$ and sweep $L$.
+8. Propagate the resistor to the layout (`layout/amp.gds`) with the `rhigh` PCell, using the same $W = 0.5\,\mathrm{\mu m}$ and $L = 25\,\mathrm{\mu m}$ as in the schematic (also place dummy resistors of minimum length above and below it), and re-run the verification chain with `make klayout-verify` and `make magic-verify`.
 
 ## Exercise 2: Three-Stage Ring Oscillator with Output Buffer {#sec-exercise2}
 
