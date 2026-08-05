@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Simon Dorrer">
-<meta name="dcterms.date" content="2026-08-04">
+<meta name="dcterms.date" content="2026-08-05">
 
 <title>HeiChips 2026 Analog Workshop</title>
 <style>
@@ -438,7 +438,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 4, 2026</p>
+      <p class="date">August 5, 2026</p>
     </div>
   </div>
   
@@ -794,7 +794,7 @@ Note
 <p>An inverter can act as a digital circuit, when the input is driven by a digital signal and the output switches between the supply rails. Here we characterize the inverter as an analog circuit. We are interested in its continuous voltage transfer characteristic and its small-signal voltage gain around the operating point.</p>
 </div>
 </div>
-<p><a href="#fig-inverter-circuit" class="quarto-xref">Figure&nbsp;1</a> shows the circuit. The NMOS <span class="math inline">\(M_1\)</span> and the PMOS <span class="math inline">\(M_2\)</span> form the complementary inverter. The transistors <span class="math inline">\(M_\mathrm{dummy1}\)</span> and <span class="math inline">\(M_\mathrm{dummy2}\)</span> are dummy devices. They do not contribute to the circuit function but improve matching in the layout, because the active transistors then see identical neighboring structures on both sides. We look at them in detail in <strong>?@sec-dummies</strong>.</p>
+<p><a href="#fig-inverter-circuit" class="quarto-xref">Figure&nbsp;1</a> shows the circuit. The NMOS <span class="math inline">\(M_1\)</span> and the PMOS <span class="math inline">\(M_2\)</span> form the complementary inverter. The transistors <span class="math inline">\(M_\mathrm{dummy1}\)</span> and <span class="math inline">\(M_\mathrm{dummy2}\)</span> are dummy devices. They do not contribute to the circuit function but improve matching in the layout, because the active transistors then see identical neighboring structures on both sides.</p>
 <div id="fig-inverter-circuit" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-inverter-circuit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -811,49 +811,8 @@ Figure&nbsp;1: The CMOS inverter circuit with dummy transistors.
 <section id="sec-tradeoffs" class="level3" data-number="3.1.1">
 <h3 data-number="3.1.1" class="anchored" data-anchor-id="sec-tradeoffs"><span class="header-section-number">3.1.1</span> Design Tradeoffs: Choosing <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> and <span class="math inline">\(L\)</span></h3>
 <p>Before sizing anything, two numbers have to be picked: the transconductance efficiency <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> and the channel length <span class="math inline">\(L\)</span>. Everything else follows from them, so it is worth understanding what each one buys and what it costs.</p>
-<p><span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> says how much transconductance you get per ampere of bias current, in <span class="math inline">\(\mathrm{S/A}\)</span>. It is a normalized, technology-independent measure of the <strong>inversion level</strong> of the device:</p>
-<div id="tbl-inversion" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-inversion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;5: Inversion levels and what they mean.
-</figcaption>
-<div aria-describedby="tbl-inversion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<table class="caption-top table">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 16%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Inversion level</th>
-<th style="text-align: center;"><span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> (<span class="math inline">\(\mathrm{S/A}\)</span>)</th>
-<th style="text-align: left;">Character</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"><strong>Strong</strong></td>
-<td style="text-align: center;">below <span class="math inline">\(\approx 7.5\)</span></td>
-<td style="text-align: left;">Large overdrive, high current density <span class="math inline">\(I_\mathrm{D}/W\)</span>, so a given current needs little width. Fast, small, and area-efficient, but each ampere buys little <span class="math inline">\(g_\mathrm{m}\)</span>.</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><strong>Moderate</strong></td>
-<td style="text-align: center;"><span class="math inline">\(\approx 7.5\)</span> to <span class="math inline">\(\approx 17.5\)</span></td>
-<td style="text-align: left;">The compromise region. The speed-efficiency product <span class="math inline">\(f_\mathrm{T} \cdot g_\mathrm{m}/I_\mathrm{D}\)</span> peaks here, which is why most amplifier stages end up in it.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><strong>Weak</strong></td>
-<td style="text-align: center;">above <span class="math inline">\(\approx 17.5\)</span></td>
-<td style="text-align: left;">Maximum <span class="math inline">\(g_\mathrm{m}\)</span> per ampere, so lowest power and highest intrinsic gain, with small <span class="math inline">\(V_\mathrm{ds,sat}\)</span> and therefore good voltage headroom. The price is width, capacitance, and speed.</td>
-</tr>
-</tbody>
-</table>
-</div>
-</figure>
-</div>
-<p>The channel length works largely independently of this. Long <span class="math inline">\(L\)</span> raises the output resistance <span class="math inline">\(r_\mathrm{ds}\)</span> and thus the intrinsic gain, improves matching, and lowers flicker noise (which scales with <span class="math inline">\(1/L^2\)</span> at constant <span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span>). Short <span class="math inline">\(L\)</span> raises <span class="math inline">\(f_\mathrm{T}\)</span> and shrinks area and gate capacitance. Speed and gain therefore pull in opposite directions.</p>
-<p><a href="#fig-tradeoffs" class="quarto-xref">Figure&nbsp;2</a> maps both knobs onto one picture. The arrows point from the center towards the corner where each design parameter reaches its <strong>best</strong> value, so the same parameter is at its worst in the opposite direction.</p>
+<p><span class="math inline">\(g_\mathrm{m}/I_\mathrm{D}\)</span> says how much transconductance you get per ampere of bias current, in <span class="math inline">\(\mathrm{S/A}\)</span>. It is a normalized, technology-independent measure of the <strong>inversion level</strong> of the device.</p>
+<p><a href="#fig-tradeoffs" class="quarto-xref">Figure&nbsp;2</a> shows the tradeoffs in one picture. The arrows point from the center towards the corner where each design parameter reaches its <strong>best</strong> value, so the same parameter is at its worst in the opposite direction.</p>
 <div id="fig-tradeoffs" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-tradeoffs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -911,11 +870,11 @@ Figure&nbsp;2: Overview of key design tradeoffs depending on the channel length 
 <li>Round the continuous widths to a practical finger configuration with equal finger counts for NMOS and PMOS (for better layout matching), and recompute the small-signal parameters with the final widths.</li>
 <li>Estimate the open-loop gain <span class="math inline">\(A_\mathrm{ol} = -g_\mathrm{m,tot} / g_\mathrm{ds,tot}\)</span> and the output resistance <span class="math inline">\(R_\mathrm{out} = 1/g_\mathrm{ds,tot}\)</span>.</li>
 </ol>
-<p>The resulting device geometry is summarized in <a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;6</a>. These are exactly the values you will enter in the schematic in <a href="#sec-schematic" class="quarto-xref">Section&nbsp;4</a>.</p>
+<p>The resulting device geometry is summarized in <a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;5</a>. These are exactly the values you will enter in the schematic in <a href="#sec-schematic" class="quarto-xref">Section&nbsp;4</a>.</p>
 <div id="tbl-sizing-geom" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-sizing-geom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;6: Sized device geometry of the inverter.
+Table&nbsp;5: Sized device geometry of the inverter.
 </figcaption>
 <div aria-describedby="tbl-sizing-geom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -982,11 +941,11 @@ f_\mathrm{cu} = \frac{1}{2\pi\,R_\mathrm{out}\,C_\mathrm{load}} = \frac{1}{2\pi 
 <p><span class="math display">\[
 f_\mathrm{T} = \frac{g_\mathrm{m,tot}}{2\pi\,C_\mathrm{load}} = \frac{6.28\,\mathrm{mS}}{2\pi \cdot 10\,\mathrm{pF}} = 100\,\mathrm{MHz}.
 \]</span></p>
-<p><a href="#tbl-sizing-vs-ac" class="quarto-xref">Table&nbsp;7</a> compares these hand calculations against the ac simulation results from the testbench in <a href="#sec-tb-ac" class="quarto-xref">Section&nbsp;4.4.1</a>. The agreement is very good, which confirms the lookup-table approach.</p>
+<p><a href="#tbl-sizing-vs-ac" class="quarto-xref">Table&nbsp;6</a> compares these hand calculations against the ac simulation results from the testbench in <a href="#sec-tb-ac" class="quarto-xref">Section&nbsp;4.4.1</a>. The agreement is very good, which confirms the lookup-table approach.</p>
 <div id="tbl-sizing-vs-ac" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-sizing-vs-ac-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;7: Calculated vs.&nbsp;simulated open-loop characteristics of the inverter.
+Table&nbsp;6: Calculated vs.&nbsp;simulated open-loop characteristics of the inverter.
 </figcaption>
 <div aria-describedby="tbl-sizing-vs-ac-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -1080,11 +1039,11 @@ Figure&nbsp;4: Simulated voltage transfer characteristic of the inverter (<code>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> inverter/schematic/xschem</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">xschem</span>                  <span class="co"># empty session</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">xschem</span> inverter.sch     <span class="co"># or load the schematic directly</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The most important shortcuts are listed in <a href="#tbl-xschem-keys" class="quarto-xref">Table&nbsp;8</a>. A complete list is available in Xschem under <code>Help -&gt; Keys</code> and in the <a href="https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-xschem-cheatsheet">Xschem Cheatsheet</a>.</p>
+<p>The most important shortcuts are listed in <a href="#tbl-xschem-keys" class="quarto-xref">Table&nbsp;7</a>. A complete list is available in Xschem under <code>Help -&gt; Keys</code> and in the <a href="https://iic-jku.github.io/analog-circuit-design/aicd.html#sec-xschem-cheatsheet">Xschem Cheatsheet</a>.</p>
 <div id="tbl-xschem-keys" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-xschem-keys-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;8: Essential Xschem shortcuts.
+Table&nbsp;7: Essential Xschem shortcuts.
 </figcaption>
 <div aria-describedby="tbl-xschem-keys-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -1201,7 +1160,7 @@ Figure&nbsp;5: The finished <code>inverter</code> schematic in Xschem, with dumm
 </div>
 <ol type="1">
 <li><strong>Place the transistors.</strong> Press <code>Ins</code>, and pick <code>sg13_lv_nmos.sym</code> and <code>sg13_lv_pmos.sym</code> from the PDK library. Place the NMOS <span class="math inline">\(M_1\)</span> at the bottom and the PMOS <span class="math inline">\(M_2\)</span> at the top.</li>
-<li><strong>Set the device parameters.</strong> Select a transistor and press <code>q</code>. Enter the values from <a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;6</a>, for example for <span class="math inline">\(M_1\)</span>: <code>l=1.0u</code>, <code>w=20.0u</code>, <code>ng=20</code>, <code>m=1</code>. Note that <code>w</code> is the total width and <code>ng</code> is the number of fingers. Keep <code>spiceprefix=X</code>, because the PSP transistor models of the PDK are SPICE subcircuits and must be instantiated with an <code>X</code> prefix.</li>
+<li><strong>Set the device parameters.</strong> Select a transistor and press <code>q</code>. Enter the values from <a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;5</a>, for example for <span class="math inline">\(M_1\)</span>: <code>l=1.0u</code>, <code>w=20.0u</code>, <code>ng=20</code>, <code>m=1</code>. Note that <code>w</code> is the total width and <code>ng</code> is the number of fingers. Keep <code>spiceprefix=X</code>, because the PSP transistor models of the PDK are SPICE subcircuits and must be instantiated with an <code>X</code> prefix.</li>
 <li><strong>Place the dummy transistors.</strong> Copy each device with <code>c</code> and change the properties to the dummy sizing (<code>w=2.0u</code>, <code>ng=2</code> for the NMOS and <code>w=12.0u</code>, <code>ng=2</code> for the PMOS). Wire all four dummy terminals to the respective supply rail (gate, source, drain, and bulk of <span class="math inline">\(M_\mathrm{dummy1}\)</span> to <code>VSS</code>, those of <span class="math inline">\(M_\mathrm{dummy2}\)</span> to <code>VDD</code>), so the dummies are off and only their geometry matters.</li>
 <li><strong>Wire the circuit.</strong> Press <code>w</code> and connect the gates of <span class="math inline">\(M_1\)</span> and <span class="math inline">\(M_2\)</span> to the input net, the drains to the output net, the NMOS source and bulk to <code>VSS</code>, and the PMOS source and bulk to <code>VDD</code>.</li>
 <li><strong>Add the pins.</strong> Press <code>Ins</code> and place <code>ipin.sym</code> for the input <code>vin</code>, <code>iopin.sym</code> for the output <code>vout</code>, and <code>iopin.sym</code> for <code>VDD</code> and <code>VSS</code>. The pin names define the port names of the subcircuit later used for LVS, so name them exactly <code>vin</code>, <code>vout</code>, <code>VDD</code>, and <code>VSS</code>.</li>
@@ -1378,11 +1337,11 @@ Tip
 <li><strong>Layers.</strong> Each drawing layer has three roles: <code>MetalX.drawing</code> carries the actual geometry, <code>MetalX.pin</code> marks pin shapes, and <code>MetalX.text</code> carries the pin labels used by LVS.</li>
 <li><strong>PCells.</strong> The PDK provides parametric cells (PCells) in the <code>SG13_dev</code> library, for example <code>nmos</code>, <code>pmos</code>, resistors (<code>rppd</code>, <code>rsil</code>, <code>rhigh</code>), capacitors (<code>cap_mfringe</code>, <code>moscap_n</code>, <code>moscap_p</code>), taps (<code>ntap1</code>, <code>ptap1</code>), the <code>guard_ring</code>, and <code>via_stack</code>.</li>
 </ul>
-<p>The most important shortcuts are listed in <a href="#tbl-klayout-keys" class="quarto-xref">Table&nbsp;9</a>, taken from the <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/klayout/klayout_cheatsheet.md">KLayout cheatsheet</a> in this repository.</p>
+<p>The most important shortcuts are listed in <a href="#tbl-klayout-keys" class="quarto-xref">Table&nbsp;8</a>, taken from the <a href="https://github.com/HeiChips/heichips26-analog-workshop/blob/main/doc/klayout/klayout_cheatsheet.md">KLayout cheatsheet</a> in this repository.</p>
 <div id="tbl-klayout-keys" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-klayout-keys-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;9: Essential KLayout shortcuts with the productivity plugins installed.
+Table&nbsp;8: Essential KLayout shortcuts with the productivity plugins installed.
 </figcaption>
 <div aria-describedby="tbl-klayout-keys-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -1469,7 +1428,7 @@ Table&nbsp;9: Essential KLayout shortcuts with the productivity plugins installe
 <div id="tbl-plugins" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-plugins-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;10: The KLayout productivity plugins in a nutshell.
+Table&nbsp;9: The KLayout productivity plugins in a nutshell.
 </figcaption>
 <div aria-describedby="tbl-plugins-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table class="caption-top table">
@@ -1528,7 +1487,7 @@ Table&nbsp;10: The KLayout productivity plugins in a nutshell.
 <ol type="1">
 <li><strong>Create the cell.</strong> <code>File &gt; New Layout</code>, top cell name <code>inverter</code>, DBU <span class="math inline">\(0.001\,\mathrm{\mu m}\)</span>.</li>
 <li><strong>Place the transistor PCells.</strong> Drag <code>nmos</code> and <code>pmos</code> from the <code>SG13_dev</code> library into the layout. Place the PMOS row above the NMOS row.</li>
-<li><strong>Match the schematic.</strong> Select each PCell and press <code>Q</code>. Set the same <code>w</code>, <code>l</code>, and <code>ng</code> values as in the schematic (<a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;6</a>): the NMOS with <span class="math inline">\(20 \times 1.0\,\mathrm{\mu m}\)</span> fingers and the PMOS with <span class="math inline">\(20 \times 6.0\,\mathrm{\mu m}\)</span> fingers, both with <span class="math inline">\(L = 1.0\,\mathrm{\mu m}\)</span>. Add the two dummy devices next to the active devices in the same way.</li>
+<li><strong>Match the schematic.</strong> Select each PCell and press <code>Q</code>. Set the same <code>w</code>, <code>l</code>, and <code>ng</code> values as in the schematic (<a href="#tbl-sizing-geom" class="quarto-xref">Table&nbsp;5</a>): the NMOS with <span class="math inline">\(20 \times 1.0\,\mathrm{\mu m}\)</span> fingers and the PMOS with <span class="math inline">\(20 \times 6.0\,\mathrm{\mu m}\)</span> fingers, both with <span class="math inline">\(L = 1.0\,\mathrm{\mu m}\)</span>. Add the two dummy devices next to the active devices in the same way.</li>
 <li><strong>Substrate and well contacts.</strong> Place <code>ptap1</code> / <code>ntap1</code> contacts (or a <code>guard_ring</code>) to tie the substrate to <code>VSS</code> and the n-well of the PMOS to <code>VDD</code>.</li>
 <li><strong>Route.</strong> Connect the gates (input), the drains (output), and the source rails with <code>Metal1</code> and <code>Metal2</code>. Use the path tool <code>P</code>, place vias with <code>O</code> or with <code>via_stack</code> PCells. Keep signal routing on the lower metals within a macro. Use the layer shortcuts <code>1</code>, <code>2</code>, <code>8</code>, <code>9</code> to focus on the layer you are working on.</li>
 <li><strong>Add the pins.</strong> Select the target metal layer and press <code>Shift + P</code> to place the pins <code>vin</code>, <code>vout</code>, <code>VDD</code>, and <code>VSS</code>. The pin tool places the pin shape on <code>MetalX.pin</code> and the label on <code>MetalX.text</code>, which is exactly what LVS expects.</li>
@@ -1692,10 +1651,10 @@ Figure&nbsp;11: Self-biased inverter amplifier with feedback resistor <span clas
 <li><p>Rename the KLayout layout file and the top cell:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mv</span> layout/inverter.gds layout/amp.gds</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Also rename the top cell inside the GDS from <code>inverter</code> to <code>amp</code>: open the layout in KLayout, rename the cell, and save. The verification targets require matching file and top-cell names.</p></li>
-<li><p>Open <code>amp.sch</code> in Xschem and add a resistor between the <code>vin</code> and <code>vout</code> nets, as shown in <a href="#fig-ex1" class="quarto-xref">Figure&nbsp;11</a>. For a first schematic-level study, the generic <code>res.sym</code> device is fine. Start with <span class="math inline">\(R_\mathrm{f} = 1\,\mathrm{M\Omega}\)</span>.</p></li>
+<li><p>Open <code>amp.sch</code> in Xschem and add the feedback resistor between the <code>vin</code> and <code>vout</code> nets, as shown in <a href="#fig-ex1" class="quarto-xref">Figure&nbsp;11</a>. Use the <code>rhigh</code> device of the PDK (<code>sg13cmos5l_pr/rhigh.sym</code>), the high-sheet poly resistor, and set <span class="math inline">\(W = 0.5\,\mathrm{\mu m}\)</span> and <span class="math inline">\(L = 25\,\mathrm{\mu m}\)</span> with <code>q</code>. Keep <code>spiceprefix=X</code> and connect the <code>body</code> terminal to <code>VSS</code>. The symbol computes its value from the geometry, which gives <span class="math inline">\(R_\mathrm{f} \approx 74\,\mathrm{k\Omega}\)</span> for these dimensions.</p></li>
 <li><p>Think first, then simulate. What do you expect to happen to the dc transfer characteristic, the ac response, and the measured gain? Then re-run the three testbenches and check whether the results match your expectations. Note that the ac open-loop testbench drives <code>vin</code> directly with a source, so to observe the self-biasing effect, also try disconnecting the input bias and let the feedback set the operating point.</p></li>
-<li><p>Vary <span class="math inline">\(R_\mathrm{f}\)</span> and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. A value in the <span class="math inline">\(1\)</span> to <span class="math inline">\(10\,\mathrm{M\Omega}\)</span> range is a sensible choice for this sizing.</p></li>
-<li><p>Propagate the resistor to the layout (<code>layout/amp.gds</code>) using an <code>rppd</code> or <code>rhigh</code> PCell (also place dummy resistors next to it), and re-run the verification chain with <code>make klayout-verify</code> and <code>make magic-verify</code>.</p></li>
+<li><p>Vary <span class="math inline">\(R_\mathrm{f}\)</span> and observe the trade-off. Too small, and the resistor loads the amplifier output and reduces the gain. Too large, and the time constant with the input capacitance limits the low end of the signal band. The resistance scales with the length, roughly <span class="math inline">\(3\,\mathrm{k\Omega}\)</span> per <span class="math inline">\(\mathrm{\mu m}\)</span> at <span class="math inline">\(W = 0.5\,\mathrm{\mu m}\)</span>, so <span class="math inline">\(L = 10\,\mathrm{\mu m}\)</span> gives about <span class="math inline">\(30\,\mathrm{k\Omega}\)</span> and <span class="math inline">\(L = 100\,\mathrm{\mu m}\)</span> about <span class="math inline">\(300\,\mathrm{k\Omega}\)</span>. Keep <span class="math inline">\(W\)</span> at <span class="math inline">\(0.5\,\mathrm{\mu m}\)</span> and sweep <span class="math inline">\(L\)</span>.</p></li>
+<li><p>Propagate the resistor to the layout (<code>layout/amp.gds</code>) with the <code>rhigh</code> PCell, using the same <span class="math inline">\(W = 0.5\,\mathrm{\mu m}\)</span> and <span class="math inline">\(L = 25\,\mathrm{\mu m}\)</span> as in the schematic (also place dummy resistors of minimum length above and below it), and re-run the verification chain with <code>make klayout-verify</code> and <code>make magic-verify</code>.</p></li>
 </ol>
 </section>
 <section id="sec-exercise2" class="level2" data-number="6.2">
