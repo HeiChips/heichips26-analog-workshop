@@ -1,0 +1,106 @@
+** sch_path: /mnt/c/Users/si150/eda/designs/heichips26-analog-workshop/ringosc/testbenches/xschem/ringosc_tb_tran.sch
+**.subckt ringosc_tb_tran
+VDD VDD GND {VDD}
+C1 vout GND {Cload}
+x1 vout VDD GND ringosc
+**** begin user architecture code
+
+
+.include ../../../netlist/pex/ringosc_magic_pex_3.spice
+.param VDD=1.5
+.csparam VDD=VDD
+.param Vcm=VDD/2
+.csparam Vcm=Vcm
+.param temp=27
+.param Cload=100f
+.param Rload=1k
+.options savecurrents reltol=1e-3 abstol=1e-12 gmin=1e-15
+.control
+
+save all
+
+* Operating Point Analysis
+op
+remzerovec
+write ringosc_tb_tran.raw
+set appendwrite
+
+* Transient Analysis
+*tran 100p 5u 2u
+tran 100p 2.55u 2.54u
+write ringosc_tb_tran.raw
+
+* Plotting
+plot vout
+plot i(VDD)
+
+* Measurements
+* Oscillation frequency from two consecutive rising crossings of the mid-level Vcm.
+* The stored transient window has to contain at least two rising edges.
+meas tran t_rise1 when v(vout)=Vcm rise=1
+meas tran t_rise2 when v(vout)=Vcm rise=2
+let T_osc = t_rise2 - t_rise1
+let f_osc = 1/T_osc
+print T_osc
+print f_osc
+
+* Stage delay of the three-stage ring, T_osc = 2 * N * t_d with N = 3
+let t_d = T_osc/6
+print t_d
+
+* Output swing
+meas tran vout_max MAX v(vout)
+meas tran vout_min MIN v(vout)
+let vout_pp = vout_max - vout_min
+print vout_pp
+
+* Write Data
+unset appendwrite
+set wr_vecnames
+set wr_singlescale
+wrdata ../plot_simulations/data/ringosc_tb_tran.txt v(vout)
+
+*quit
+.endc
+
+
+
+.lib cornerMOSlv.lib mos_tt
+.lib cornerMOShv.lib mos_tt
+.lib cornerRES.lib res_typ
+.lib cornerDIO.lib dio_tt
+
+**** end user architecture code
+**.ends
+
+* expanding   symbol:  ringosc.sym # of pins=3
+** sym_path: /mnt/c/Users/si150/eda/designs/heichips26-analog-workshop/ringosc/schematic/xschem/ringosc.sym
+** sch_path: /mnt/c/Users/si150/eda/designs/heichips26-analog-workshop/ringosc/schematic/xschem/ringosc.sch
+.subckt ringosc vout VDD VSS
+*.iopin VDD
+*.iopin VSS
+*.opin vout
+x1 VDD vosc net1 VSS inverter
+x2 VDD net1 net2 VSS inverter
+x3 VDD net2 vosc VSS inverter
+x4 VDD vosc vout VSS inverter
+.ends
+
+
+* expanding   symbol:  inverter.sym # of pins=4
+** sym_path: /mnt/c/Users/si150/eda/designs/heichips26-analog-workshop/ringosc/schematic/xschem/inverter.sym
+** sch_path: /mnt/c/Users/si150/eda/designs/heichips26-analog-workshop/ringosc/schematic/xschem/inverter.sch
+.subckt inverter VDD vin vout VSS
+*.ipin vin
+*.iopin VDD
+*.iopin VSS
+*.iopin vout
+XMdummy1 VSS VSS VSS VSS sg13_lv_nmos w=2.0u l=1.0u ng=2 m=1 mm_ok=1
+XMdummy2 VDD VDD VDD VDD sg13_lv_pmos w=12.0u l=1.0u ng=2 m=1 mm_ok=1
+XM1 vout vin VSS VSS sg13_lv_nmos w=20.0u l=1.0u ng=20 m=1 mm_ok=1
+XM2 vout vin VDD VDD sg13_lv_pmos w=120.0u l=1.0u ng=20 m=1 mm_ok=1
+.ends
+
+.GLOBAL GND
+.GLOBAL VDD
+.end
