@@ -701,7 +701,17 @@ Recommended steps:
 
 3. Open `ringosc.sch` (it still contains the copied transistor-level inverter), delete its content, and place four instances of `inverter.sym`. Connect three of them in a ring, and tap the ring node with the fourth inverter as the buffer. Add the pins `vout`, `VDD`, and `VSS`.
 4. Update the symbol `ringosc.sym` and the PEX symbol `ringosc_pex.sym`: remove the `vin` pin, the ring oscillator has no input. Alternatively, regenerate the symbol from the schematic (press `A`), following @sec-draw-symbol and @sec-pex-symbol.
-5. Adapt the renamed transient testbench `ringosc_tb_tran.sch`: remove the input source, and measure the oscillation frequency. Since the delay per stage is small, simulate a few hundred nanoseconds with a fine step. Measure the frequency, for example with two `meas tran ... when v(vout)=0.75 rise=...` commands that time consecutive rising crossings of $V_\mathrm{cm}$, and compute $f_\mathrm{osc} = 1/T$. The expected relation is $f_\mathrm{osc} = 1/(2 \cdot N \cdot t_\mathrm{d})$ with $N = 3$ stages and $t_\mathrm{d}$ the effective stage delay. Delete the testbenches that are no longer relevant.
+5. Adapt the renamed transient testbench `ringosc_tb_tran.sch`: remove the input source, and measure the oscillation frequency. Since the delay per stage is small, simulate a few hundred nanoseconds with a fine step. Measure the frequency with two `meas tran` commands that time consecutive rising crossings of $V_\mathrm{cm}$, and compute $f_\mathrm{osc} = 1/T_\mathrm{osc}$ from them:
+
+   ```spice
+   meas tran t_rise1 when v(vout)=Vcm rise=1
+   meas tran t_rise2 when v(vout)=Vcm rise=2
+   let T_osc = t_rise2 - t_rise1
+   let f_osc = 1/T_osc
+   print f_osc
+   ```
+
+   Add `.csparam Vcm=Vcm` next to the `.param Vcm=VDD/2` line, otherwise `Vcm` is not visible inside the `.control` block. Make sure the stored transient window contains at least two rising edges. The expected relation is $f_\mathrm{osc} = 1/(2 \cdot N \cdot t_\mathrm{d})$ with $N = 3$ stages and $t_\mathrm{d}$ the effective stage delay. Delete the testbenches that are no longer relevant.
 6. Think about the startup. An ideal simulation can rest on the metastable point where all stages sit at $V_\mathrm{cm}$. If the ring does not start, kick it with an initial condition, for example `.ic v(osc)=0`.
 7. Resize the inverter and watch the frequency. Open `inverter.sch` and vary $W$, $L$, and the finger count `ng` of $M_1$ and $M_2$, then re-run the transient simulation for each variant. Predict the outcome before you simulate, and use @sec-tradeoffs as your guide.
 8. Draw the top-level layout in `layout/ringosc.gds`, following @sec-draw-layout: create a new top cell `ringosc`, place four instances of the existing `inverter` cell, and route the ring. Re-run DRC and LVS, extract the parasitics with `make magic-pex`, and compare the post-layout oscillation frequency against the schematic level. The parasitics add delay per stage, so the frequency drops.
