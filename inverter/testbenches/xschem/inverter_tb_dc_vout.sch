@@ -123,7 +123,3 @@ C {devices/gnd.sym} 1320 -960 0 0 {name=l3 lab=GND}
 C {vdd.sym} 1320 -1100 0 0 {name=l7 lab=VDD}
 C {devices/lab_pin.sym} 1400 -860 0 1 {name=l12 sig_type=std_logic lab=vout}
 C {devices/lab_pin.sym} 900 -860 0 0 {name=l22 sig_type=std_logic lab=vin}
-C {devices/code_shown.sym} 1660 -1430 0 0 {name=SAVE only_toplevel=true
-format="tcleval( @value )"
-value=".include [file rootname [xschem get schname]].save
-"}
